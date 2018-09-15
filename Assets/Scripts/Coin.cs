@@ -16,8 +16,8 @@ namespace Assets.Scripts
         {
             var rand = new System.Random();
 
-            var groundPoints = GameSessionData.GetInstance().GetGroundPoints();
-            var activeCoins = GameSessionData.GetInstance().Coins.Where(coin => coin.gameObject.activeSelf);
+            var groundPoints = GameSessionData.Instance.GetGroundPoints();
+            var activeCoins = GameSessionData.Instance.Coins.Where(coin => coin.gameObject.activeSelf);
 
             var point = groundPoints[rand.Next(0, groundPoints.Count)];
 

@@ -24,8 +24,8 @@ namespace Assets.Scripts
             base.Awake();
 
             State = UnitState.Move;
-            Speed = 0F;
-            //Speed = 1.5F;
+            //Speed = 0F;
+            Speed = 1.5F;
 
             _goalX = (int)transform.position.x;
             _goalY = (int)transform.position.y;
@@ -38,7 +38,7 @@ namespace Assets.Scripts
         private Coin _coin;
         protected virtual void Update()
         {
-            if(_shouldMove)
+            if (_shouldMove)
                 Move();
 
             //if (Input.GetButton("Jump"))
@@ -85,16 +85,47 @@ namespace Assets.Scripts
             Debug.Log(Speed);
         }
 
+        private LinkedList<Point> _path;
+
+        private void UpdatePath()
+        {
+            var currentPoint = new Point((int)transform.position.x, (int)transform.position.y);
+
+            if (_path != null && _path.Any() && _path.First.Value == currentPoint)
+                _path.RemoveFirst();
+
+            if (_path == null || !_path.Any())
+            {
+                var player = GameObject.Find("Player");
+
+                _path = new LinkedList<Point>(GameSessionData.Instance.PathFinder.FindPath(
+                    GameSessionData.Instance.Maze, 
+                    currentPoint, 
+                    new Point((int)player.transform.position.x, (int)player.transform.position.y)));
+            }
+
+
+        }
+
         public virtual void Move()
         {
-            if ((int)transform.position.x == _goalX && (int)transform.position.y == _goalY)
-                UpdateDirection();
+            UpdatePath();
 
-            if (_goalX != (int)transform.position.x)
-                GoToPointX(_goalX);
+            if (_path.First.Value.X != (int)transform.position.x)
+                GoToPointX(_path.First.Value.X);
 
-            if (_goalY != (int)transform.position.y)
-                GoToPointY(_goalY);
+            if (_path.First.Value.Y != (int)transform.position.y)
+                GoToPointY(_path.First.Value.Y);
+
+
+            //if ((int)transform.position.x == _goalX && (int)transform.position.y == _goalY)
+            //    UpdateDirection();
+
+            //if (_goalX != (int)transform.position.x)
+            //    GoToPointX(_goalX);
+
+            //if (_goalY != (int)transform.position.y)
+            //    GoToPointY(_goalY);
         }
 
         private void UpdateDirection()
@@ -104,16 +135,16 @@ namespace Assets.Scripts
 
             var availablePoints = new List<Point>();
 
-            if (!GameSessionData.GetInstance().Maze[currentX, currentY])
+            if (!GameSessionData.Instance.Maze[currentX, currentY])
                 availablePoints.Add(new Point { X = currentX, Y = currentY - 1 });
 
-            if (!GameSessionData.GetInstance().Maze[currentX, currentY + 1])
+            if (!GameSessionData.Instance.Maze[currentX, currentY + 1])
                 availablePoints.Add(new Point { X = currentX, Y = currentY + 1 });
 
-            if (!GameSessionData.GetInstance().Maze[currentX - 1, currentY])
+            if (!GameSessionData.Instance.Maze[currentX - 1, currentY])
                 availablePoints.Add(new Point { X = currentX - 1, Y = currentY });
 
-            if (!GameSessionData.GetInstance().Maze[currentX + 1, currentY])
+            if (!GameSessionData.Instance.Maze[currentX + 1, currentY])
                 availablePoints.Add(new Point { X = currentX + 1, Y = currentY });
 
             var rand = new System.Random();

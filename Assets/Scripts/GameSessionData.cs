@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using Assets.Classes;
+using Assets.Classes.PathFinder;
+using Assets.Interfaces;
 using UnityEngine;
 
 namespace Assets.Scripts
 {
     public class GameSessionData
     {
-        private static readonly GameSessionData Instance = new GameSessionData();
+        private static readonly GameSessionData _instance = new GameSessionData();
 
         public bool[,] Maze { get; set; }
         public List<Coin> Coins { get; private set; }
@@ -16,17 +18,24 @@ namespace Assets.Scripts
 
         public GameController Game { get; private set; }
 
+        public IPathFinder PathFinder { get; set; }
+
         private GameSessionData()
         {
             Coins = new List<Coin>(10);
             Enemies = new List<MovableEnemy>();
 
             Game = GameObject.Find("Game").GetComponent<GameController>();
+
+            PathFinder = new RandomPathFinder();
         }
 
-        public static GameSessionData GetInstance()
+        public static GameSessionData Instance
         {
-            return Instance;
+            get
+            {
+                return _instance;
+            }
         }
 
         public List<Point> GetGroundPoints()

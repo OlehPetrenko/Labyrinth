@@ -25,7 +25,7 @@ namespace Assets.Scripts
             {
                 coin.PickUp();
 
-                GameSessionData.GetInstance().Game.UpdateScore();
+                GameSessionData.Instance.Game.UpdateScore();
             }
         }
 
