@@ -3,6 +3,7 @@ using System.Linq;
 using Assets.Classes.PathFinder;
 using Assets.Interfaces;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -19,6 +20,7 @@ namespace Assets.Scripts
         private MovableEnemy _zombie;
         private MovableEnemy _mummy;
 
+        private Player _player;
 
         void Awake()
         {
@@ -29,7 +31,31 @@ namespace Assets.Scripts
 
             _score = GameObject.Find("CoinCount").GetComponent<Text>();
 
-            GameSessionData.Instance.CoinCount = 18;
+            _player = GameObject.Find("Player").GetComponent<Player>();
+
+            _player.OnDestroyEvent += LoadFinishScene;
+
+            InitializeGame();
+        }
+
+        private void InitializeGame()
+        {
+            GameSessionData.Instance.InitializeSession();
+
+            GameSessionData.Instance.PathFinder = new RandomPathFinder();
+        }
+
+        private void LoadFinishScene()
+        {
+            SceneManager.LoadScene("FinishScene");
+        }
+
+        void OnDestroy()
+        {
+            GameSessionData.Instance.Coins.ForEach(coin => coin.PickUp());
+
+            StopCoroutine("CreateCoin");
+            _player.OnDestroyEvent -= LoadFinishScene;
         }
 
         public void UpdateScore()
@@ -52,7 +78,7 @@ namespace Assets.Scripts
         void Start()
         {
             _mazeBuilder = GameObject.Find("Maze").GetComponent<MazeBuilder>();
-            _mazeBuilder.GenerateNewMaze(17, 8);
+            _mazeBuilder.GenerateNewMaze(18, 10);
 
             GameSessionData.Instance.Maze = _mazeBuilder.Data;
 

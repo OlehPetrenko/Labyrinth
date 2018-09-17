@@ -27,7 +27,7 @@ namespace Assets.Scripts
 
             Game = GameObject.Find("Game").GetComponent<GameController>();
 
-            PathFinder = new RandomPathFinder();
+            //PathFinder = new RandomPathFinder();
         }
 
         public static GameSessionData Instance
@@ -36,6 +36,17 @@ namespace Assets.Scripts
             {
                 return _instance;
             }
+        }
+
+        public void InitializeSession()
+        {
+            Game = GameObject.Find("Game").GetComponent<GameController>();
+
+            CoinCount = 0;
+            Enemies = new List<MovableEnemy>();
+            PathFinder = null;
+
+            Coins.ForEach(coin => coin.PickUp());
         }
 
         public List<Point> GetGroundPoints()

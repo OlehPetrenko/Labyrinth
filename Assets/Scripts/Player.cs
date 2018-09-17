@@ -1,4 +1,5 @@
-﻿using System.Security;
+﻿using System;
+using System.Security;
 using Assets.Classes;
 using Assets.Interfaces;
 using UnityEngine;
@@ -7,6 +8,8 @@ namespace Assets.Scripts
 {
     public sealed class Player : Unit, IMovable
     {
+        public event Action OnDestroyEvent;
+
         public float Speed { get; set; }
 
         protected override void Awake()
@@ -55,6 +58,13 @@ namespace Assets.Scripts
             Sprite.flipX = direction.x < 0;
 
             State = UnitState.Move;
+        }
+
+        void OnDestroy()
+        {
+            if (this.OnDestroyEvent != null)
+                OnDestroyEvent();
+
         }
     }
 }

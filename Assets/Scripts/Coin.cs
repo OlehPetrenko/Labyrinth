@@ -7,6 +7,11 @@ namespace Assets.Scripts
 {
     public class Coin : MonoBehaviour
     {
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         public void PickUp()
         {
             gameObject.SetActive(false);
