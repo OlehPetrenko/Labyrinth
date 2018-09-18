@@ -9,5 +9,10 @@ namespace Assets.Scripts
         {
             SceneManager.LoadScene("GameScene");
         }
+
+        public void OpenScores()
+        {
+            SceneManager.LoadScene("ScoresScene");
+        }
     }
 }
