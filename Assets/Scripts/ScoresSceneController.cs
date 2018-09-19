@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Assets.Classes;
 using Mono.Xml;
 using UnityEngine;
@@ -10,68 +11,152 @@ namespace Assets.Scripts
 {
     public class ScoresSceneController : MonoBehaviour
     {
-        private ScoreItem _scoreItem;
+        [SerializeField]
+        private int _numberOfShownItems;
+
+        [SerializeField]
+        private int _spacing;
+
+        [SerializeField]
+        private int _startPositionY;
+
 
         private List<ScoreItem> _scoreItems;
 
+        private List<ScoreItemDto> _scores;
+
         private GameObject _items;
+
+        private int _index = -1;
+
+        private int _itemHeightWithSpacing;
+
+        private List<ScoreItemDto> Scores
+        {
+            get
+            {
+                if (_scores != null)
+                    return _scores;
+
+                return _scores = GameSessionData.Instance.Scores.ToList();
+            }
+        }
 
         private void Awake()
         {
-            _scoreItem = Resources.Load("ScoreItem", typeof(ScoreItem)) as ScoreItem;
-
-            _scoreItems = new List<ScoreItem>();
 
             _items = GameObject.Find("Items");
 
+            GameObject.Find("ScrollRect").GetComponent<ScrollRect>().onValueChanged.AddListener(ListenerMethod);
 
-            var aa = new List<ScoreItemDto>();
-
-            for (int i = 0; i < 15; i++)
-            {
-                var temp = new ScoreItemDto
-                {
-                    Name = "Oleh" + i,
-                    Score = "111",
-                    Date = DateTime.Today.ToShortDateString(),
-                    Duration = "00:00:01",
-                    Result = "lol"
-                };
-
-                aa.Add(temp);
-            }
-
-            UpdateScores(aa);
-
-            ScrollToTop();
+            InitializeScores();
         }
 
-        public void ScrollToTop()
+        public void ListenerMethod(Vector2 value)
         {
-            GameObject.Find("ScrollRect").GetComponent<ScrollRect>().normalizedPosition = new Vector2(0, 1);
-            //scrollRect.normalizedPosition = new Vector2(0, 1);
+            var currentIndex = (int)_items.transform.localPosition.y / _itemHeightWithSpacing - 1;
+
+            if (_index < currentIndex)
+                SetScoreItemBelow();
+            if (_index > currentIndex)
+                SetScoreItemAbove();
+
+            _index = currentIndex;
         }
 
-        private void UpdateScores(List<ScoreItemDto> scoreItems)
+        public void SetScoreItemBelow()
         {
-            for (int i = 0; i < 7; i++)
+            var currentIndex = (int)_items.transform.localPosition.y / _itemHeightWithSpacing - 1;
+
+            if (currentIndex + _numberOfShownItems >= Scores.Count)
+                return;
+
+            if (currentIndex < 0)
+                return;
+
+            var lastItemPosition = GetLastItem().GetComponent<RectTransform>().localPosition.y - _itemHeightWithSpacing;
+            var topItem = GetFirstItem();
+
+            var scoreItemDto = Scores[currentIndex + _numberOfShownItems];
+
+            topItem.GetComponent<RectTransform>().localPosition = new Vector3(0, lastItemPosition, 0);
+
+            FillScoreItem(topItem, scoreItemDto);
+        }
+
+        public void SetScoreItemAbove()
+        {
+            var currentIndex = (int)_items.transform.localPosition.y / _itemHeightWithSpacing;
+
+            if (currentIndex < 0 || currentIndex + _numberOfShownItems + 1 > Scores.Count)
+                return;
+
+            if (currentIndex < 0)
+                return;
+
+            var firstItemPosition = GetFirstItem().GetComponent<RectTransform>().localPosition.y + _itemHeightWithSpacing;
+            var bottomItem = GetLastItem();
+
+            var scoreItemDto = Scores[currentIndex];
+
+            bottomItem.GetComponent<RectTransform>().localPosition = new Vector3(0, firstItemPosition, 0);
+
+            FillScoreItem(bottomItem, scoreItemDto);
+        }
+
+        private void InitializeScores()
+        {
+            _scoreItems = new List<ScoreItem>();
+            var scoreItemResource = Resources.Load("ScoreItem", typeof(ScoreItem)) as ScoreItem;
+
+            if (scoreItemResource == null || scoreItemResource.GetComponent<RectTransform>() == null)
+                return;
+
+            _itemHeightWithSpacing = (int)scoreItemResource.GetComponent<RectTransform>().rect.height + _spacing;
+
+            //
+            // If number of score items less than max number of items on UI
+            // create only the right amount of objects.
+            //
+            if (_numberOfShownItems > Scores.Count)
+                _numberOfShownItems = Scores.Count;
+
+            for (var i = 0; i < _numberOfShownItems; i++)
             {
-                var scoreItem = Instantiate(_scoreItem);
+                var scoreItem = Instantiate(scoreItemResource, _items.transform);
+                var scoreItemRectTransform = scoreItem.GetComponent<RectTransform>();
 
-                scoreItem.transform.parent = _items.transform;
+                var position = _startPositionY - _itemHeightWithSpacing * i;
 
-                scoreItem.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-                scoreItem.GetComponent<RectTransform>().localScale = Vector3.one;
+                scoreItemRectTransform.localPosition = new Vector3(0, position, 0);
+                scoreItemRectTransform.localScale = Vector3.one;
 
-                scoreItem.Name = scoreItems[i].Name;
-                scoreItem.Score = scoreItems[i].Score;
-                scoreItem.Date = scoreItems[i].Date;
-                scoreItem.Duration = scoreItems[i].Duration;
-                scoreItem.Result = scoreItems[i].Result;
+                FillScoreItem(scoreItem, Scores[i]);
+
+                _scoreItems.Add(scoreItem);
             }
         }
 
+        private ScoreItem GetFirstItem()
+        {
+            var maxY = (int)_scoreItems.Max(score => score.GetComponent<RectTransform>().localPosition.y);
+            return _scoreItems.First(score => (int)score.GetComponent<RectTransform>().localPosition.y == maxY);
+        }
 
+        private ScoreItem GetLastItem()
+        {
+            var minY = (int)_scoreItems.Min(score => score.GetComponent<RectTransform>().localPosition.y);
+            return _scoreItems.First(score => (int)score.GetComponent<RectTransform>().localPosition.y == minY);
+        }
+
+        private void FillScoreItem(ScoreItem scoreItem, ScoreItemDto scoreItemDto)
+        {
+            scoreItem.Name = scoreItemDto.Name;
+            scoreItem.Score = scoreItemDto.Score;
+            scoreItem.Date = scoreItemDto.Date;
+            scoreItem.Duration = scoreItemDto.Duration;
+            scoreItem.Result = scoreItemDto.Result;
+        }
 
         public void OpenMainMenu()
         {

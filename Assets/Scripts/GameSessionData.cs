@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Assets.Classes;
 using Assets.Classes.PathFinder;
 using Assets.Interfaces;
@@ -10,9 +11,13 @@ namespace Assets.Scripts
     {
         private static readonly GameSessionData _instance = new GameSessionData();
 
+        public static GameSessionData Instance { get { return _instance; } }
+
         public bool[,] Maze { get; set; }
         public List<Coin> Coins { get; private set; }
         public int CoinCount { get; set; }
+
+        public LinkedList<ScoreItemDto> Scores { get; set; }
 
         public List<MovableEnemy> Enemies { get; private set; }
 
@@ -20,22 +25,22 @@ namespace Assets.Scripts
 
         public IPathFinder PathFinder { get; set; }
 
+        private IScoresDataManager _scoresDataManager;
+
         private GameSessionData()
         {
             Coins = new List<Coin>(10);
             Enemies = new List<MovableEnemy>();
 
-            Game = GameObject.Find("Game").GetComponent<GameController>();
+            //Game = GameObject.Find("Game").GetComponent<GameController>();
 
-            //PathFinder = new RandomPathFinder();
+            _scoresDataManager = new ScoresJsonToFileDataManager();
+            Scores = new LinkedList<ScoreItemDto>(_scoresDataManager.Load());
         }
 
-        public static GameSessionData Instance
+        public void Save()
         {
-            get
-            {
-                return _instance;
-            }
+            _scoresDataManager.Save(Scores.ToList());
         }
 
         public void InitializeSession()

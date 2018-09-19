@@ -5,12 +5,13 @@ using System.Text;
 
 namespace Assets.Classes
 {
+    [Serializable]
     public sealed class ScoreItemDto
     {
-        public string Name { get; set; }
-        public string Score { get; set; }
-        public string Duration { get; set; }
-        public string Date { get; set; }
-        public string Result { get; set; }
+        public string Name;
+        public string Score;
+        public string Duration;
+        public string Date;
+        public string Result;
     }
 }

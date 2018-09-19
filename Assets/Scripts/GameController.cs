@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
+using Assets.Classes;
 using Assets.Classes.PathFinder;
 using Assets.Interfaces;
 using UnityEngine;
@@ -38,6 +40,28 @@ namespace Assets.Scripts
             InitializeGame();
         }
 
+        private enum EscapeType
+        {
+            Dead,
+            Interrupted
+        }
+
+        private EscapeType _escapeType = EscapeType.Dead;
+
+        private void AddGameInfo()
+        {
+            var scoreItem = new ScoreItemDto()
+            {
+                Name = "",
+                Score = GameSessionData.Instance.CoinCount.ToString(),
+                Date = DateTime.Today.ToShortDateString(),
+                Duration = "",
+                Result = _escapeType.ToString()
+            };
+
+            GameSessionData.Instance.Scores.AddFirst(scoreItem);
+        }
+
         private void InitializeGame()
         {
             GameSessionData.Instance.InitializeSession();
@@ -50,12 +74,16 @@ namespace Assets.Scripts
             SceneManager.LoadScene("FinishScene");
         }
 
+
+
         void OnDestroy()
         {
             GameSessionData.Instance.Coins.ForEach(coin => coin.PickUp());
 
             StopCoroutine("CreateCoin");
             _player.OnDestroyEvent -= LoadFinishScene;
+
+            AddGameInfo();
         }
 
         public void UpdateScore()
@@ -87,9 +115,12 @@ namespace Assets.Scripts
             StartCoroutine("CreateCoin");
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
-
+            if (Input.GetKey("escape"))
+            {
+                _escapeType = EscapeType.Interrupted;
+            }
         }
 
         private void CreateEnemy(MovableEnemy enemy)
