@@ -13,6 +13,8 @@ namespace Assets.Scripts
 
         public static GameSessionData Instance { get { return _instance; } }
 
+        public string UserName { get; set; }
+
         public bool[,] Maze { get; set; }
         public List<Coin> Coins { get; private set; }
         public int CoinCount { get; set; }

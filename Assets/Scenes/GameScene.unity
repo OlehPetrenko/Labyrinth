@@ -650,6 +650,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5753805fec11d944c98ed012828e59b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _coin: {fileID: 114730641411400856, guid: b6b50931fbeaad547988092711ba458d, type: 2}
+  _score: {fileID: 559720872}
+  _zombie: {fileID: 114756914414212984, guid: ecead409fc36c0e4d833f140b668205c, type: 2}
+  _mummy: {fileID: 114783455347100906, guid: 60f8f0e3f7096a1449002ef323589d58, type: 2}
+  _player: {fileID: 273037011}
 --- !u!4 &1219183191
 Transform:
   m_ObjectHideFlags: 0
