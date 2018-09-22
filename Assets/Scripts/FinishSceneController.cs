@@ -1,13 +1,21 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Provides main logic for the finish scene.
+    /// </summary>
     public class FinishSceneController : MonoBehaviour
     {
-        private TextMeshProUGUI _score;
+        [SerializeField]
+        public TextMeshProUGUI _scoreField;
+
+        private void Awake()
+        {
+            _scoreField.text = string.Format("SCORE: {0}", GameSessionData.Instance.CoinCount);
+        }
 
         public void RestartGame()
         {
@@ -17,14 +25,6 @@ namespace Assets.Scripts
         public void OpenMainMenu()
         {
             SceneManager.LoadScene("StartScene");
-        }
-
-        private void Awake()
-        {
-            _score = GameObject.Find("Score").GetComponent<TextMeshProUGUI>();
-
-            _score.text = string.Format("SCORE: {0}", GameSessionData.Instance.CoinCount);
-
         }
     }
 }

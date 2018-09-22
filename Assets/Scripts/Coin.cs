@@ -1,10 +1,11 @@
-﻿using System.Collections;
-using System.Linq;
-using System.Runtime.Remoting;
+﻿using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Provides logic for a coin.
+    /// </summary>
     public class Coin : MonoBehaviour
     {
         private void Awake()
@@ -26,6 +27,9 @@ namespace Assets.Scripts
 
             var point = groundPoints[rand.Next(0, groundPoints.Count)];
 
+            //
+            // Choose a new point to create if the chosen point already contains a coin.
+            //
             while (activeCoins.Any(coin => (int)coin.transform.position.x == point.X && (int)coin.transform.position.y == point.Y))
                 point = groundPoints[rand.Next(0, groundPoints.Count)];
 

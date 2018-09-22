@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Classes
 {
-    public class MazeDataGenerator 
+    public class MazeDataGenerator
     {
-        public float PlacementThreshold;
+        private float PlacementThreshold { get; set; }
+
 
         public MazeDataGenerator()
         {
             PlacementThreshold = .3f;
         }
 
-        public bool[,] FromDimensions(int sizeRows, int sizeCols)
+        public bool[,] Generate(int sizeRows, int sizeCols)
         {
             var maze = new bool[sizeRows, sizeCols];
 
@@ -22,20 +23,24 @@ namespace Assets.Scripts
             {
                 for (var j = 0; j <= cMax; j++)
                 {
-                    // outside wall
+                    //
+                    // Outside wall.
+                    //
                     if (i == 0 || j == 0 || i == rMax || j == cMax)
-                    {
                         maze[i, j] = true;
-                    }
 
-                    // every other inside space
+                    //
+                    // Every other inside space.
+                    //
                     else if (i % 2 == 0 && j % 2 == 0)
                     {
                         if (Random.value > PlacementThreshold)
                         {
                             maze[i, j] = true;
 
-                            // in addition to this spot, randomly place adjacent
+                            //
+                            // In addition to this spot, randomly place adjacent.
+                            //
                             var a = Random.value < .2 ? 0 : (Random.value < .2 ? -1 : 1);
                             var b = a != 0 ? 0 : (Random.value < .2 ? -1 : 1);
                             maze[i + a, j + b] = true;

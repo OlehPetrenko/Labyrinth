@@ -17,7 +17,7 @@ namespace Assets.Scripts
 
         public bool[,] Maze { get; set; }
         public List<Coin> Coins { get; private set; }
-        public int CoinCount { get; set; }
+        public int CoinCount { get;  set; }
 
         public LinkedList<ScoreItemDto> Scores { get; set; }
 
@@ -53,7 +53,7 @@ namespace Assets.Scripts
             Enemies = new List<MovableEnemy>();
             PathFinder = null;
 
-            Coins.ForEach(coin => coin.PickUp());
+            //Coins.ForEach(coin => coin.PickUp());
         }
 
         public List<Point> GetGroundPoints()

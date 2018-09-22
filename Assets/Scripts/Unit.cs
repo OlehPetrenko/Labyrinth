@@ -1,9 +1,11 @@
-﻿using System.Security;
-using Assets.Classes;
+﻿using Assets.Classes;
 using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Provides basic logic for units.
+    /// </summary>
     public class Unit : MonoBehaviour
     {
         protected Animator Animator { get; private set; }

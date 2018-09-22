@@ -3,7 +3,6 @@ using System.Collections;
 using System.Linq;
 using Assets.Classes;
 using Assets.Classes.PathFinder;
-using Assets.Interfaces;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,14 +11,27 @@ namespace Assets.Scripts
 {
     public class GameController : MonoBehaviour
     {
-        private const int MaxCoinCount = 10;
+        private enum EscapeType
+        {
+            Dead,
+            Interrupted
+        }
 
+        private EscapeType _escapeType;
+
+        private DateTime _startTime;
+        private DateTime _finishTime;
+
+        [SerializeField]
         private MazeBuilder _mazeBuilder;
-        [SerializeField]
-        private Coin _coin;
 
         [SerializeField]
-        private Text _score;
+        private int _mazeRowsSize;
+        [SerializeField]
+        private int _mazeColsSize;
+
+        [SerializeField]
+        private Player _player;
 
         [SerializeField]
         private MovableEnemy _zombie;
@@ -27,130 +39,26 @@ namespace Assets.Scripts
         private MovableEnemy _mummy;
 
         [SerializeField]
-        private Player _player;
+        private int _maxCoinsCountInMaze;
+        [SerializeField]
+        private int _coinAppearanceIntervalSec;
 
-        private DateTime _startTiem;
-        private DateTime _finishTiem;
+        [SerializeField]
+        private Coin _coin;
+        [SerializeField]
+        private Text _score;
 
-        void Awake()
+
+        private void Awake()
         {
-            _startTiem = DateTime.Now;
-
-            //DontDestroyOnLoad(gameObject);
-
-            //if (FindObjectsOfType(GetType()).Length > 1)
-            //    Destroy(gameObject);
-
-            //_coin = Resources.Load("Coin", typeof(Coin)) as Coin;
-
-            //_zombie = Resources.Load("Zombie", typeof(MovableEnemy)) as MovableEnemy;
-            //_mummy = Resources.Load("Mummy", typeof(MovableEnemy)) as MovableEnemy;
-
-            //_score = GameObject.Find("CoinCount").GetComponent<Text>();
-
-            //_player = GameObject.Find("Player").GetComponent<Player>();
-
-            //_player.OnDestroyEvent += FinishGame;
-
-            //InitializeGameSession();
-        }
-
-
-
-        private enum EscapeType
-        {
-            Dead,
-            Interrupted
-        }
-
-        private EscapeType _escapeType = EscapeType.Dead;
-
-        private void AddGameInfo()
-        {
-            var time = (_finishTiem - _startTiem);
-
-            var scoreItem = new ScoreItemDto
-            {
-                Name = GameSessionData.Instance.UserName,
-                Score = GameSessionData.Instance.CoinCount.ToString(),
-                Date = DateTime.Today.ToShortDateString(),
-                Duration = string.Format("{0}:{1}:{2}", time.Hours, time.Minutes, time.Seconds),
-                Result = _escapeType.ToString()
-            };
-
-            GameSessionData.Instance.Scores.AddFirst(scoreItem);
-        }
-
-        private void InitializeGameSession()
-        {
-            GameSessionData.Instance.InitializeSession();
-
-            GameSessionData.Instance.PathFinder = new RandomPathFinder();
-        }
-
-        private void FinishGame()
-        {
-            _finishTiem = DateTime.Now;
-
-
-            GameSessionData.Instance.Coins.ForEach(coin => coin.PickUp());
-
-            StopCoroutine("CreateCoin");
-            _player.OnDestroyEvent -= LoadFinishScene;
-
-            AddGameInfo();
-
-
-        }
-
-        private void LoadFinishScene()
-        {
-            SceneManager.LoadScene("FinishScene");
-
-        }
-
-        void OnDestroy()
-        {
-            FinishGame();
-        }
-
-        public void UpdateScore()
-        {
-            GameSessionData.Instance.CoinCount++;
-
-            if (GameSessionData.Instance.CoinCount == 5)
-                CreateEnemy(_zombie);
-            else if (GameSessionData.Instance.CoinCount == 10)
-                CreateEnemy(_mummy);
-            else if (GameSessionData.Instance.CoinCount == 20)
-                GameSessionData.Instance.PathFinder = new AStarPathFinder();
-            else if (GameSessionData.Instance.CoinCount > 20)
-                GameSessionData.Instance.Enemies.ForEach(enemy => enemy.IncreaseSpeed());
-
-            _score.text = GameSessionData.Instance.CoinCount.ToString();
-        }
-
-        // Use this for initialization
-        void Start()
-        {
-            Debug.Log("hhhhhhhhhhh");
-
             InitializeGameSession();
 
+            _player.OnDestroyEvent += PlayerDied;
+        }
 
-
-            _mazeBuilder = GameObject.Find("Maze").GetComponent<MazeBuilder>();
-            _mazeBuilder.GenerateNewMaze(18, 10);
-
-            GameSessionData.Instance.Maze = _mazeBuilder.Data;
-
-            CreateEnemy(_zombie);
-
-            StartCoroutine("CreateCoin");
-
-            _player.OnDestroyEvent += LoadFinishScene;
-
-
+        private void Start()
+        {
+            _startTime = DateTime.Now;
         }
 
         private void Update()
@@ -162,17 +70,71 @@ namespace Assets.Scripts
             }
         }
 
+        private void OnDestroy()
+        {
+            FinishGame();
+        }
+
+        private void CreateMaze()
+        {
+            _mazeBuilder.GenerateNewMaze(_mazeRowsSize, _mazeColsSize);
+            GameSessionData.Instance.Maze = _mazeBuilder.Data;
+        }
+
+        private void InitializeGameSession()
+        {
+            CreateMaze();
+
+            GameSessionData.Instance.InitializeSession();
+            GameSessionData.Instance.PathFinder = new RandomPathFinder();
+
+            CreateEnemy(_zombie);
+            StartCoroutine("CreateCoin");
+        }
+
+        public void UpdateScore()
+        {
+            GameSessionData.Instance.CoinCount++;
+
+            UpdateGameBehaviour();
+
+            _score.text = GameSessionData.Instance.CoinCount.ToString();
+        }
+
+        private void UpdateGameBehaviour()
+        {
+            if (GameSessionData.Instance.CoinCount == 5)
+                CreateEnemy(_zombie);
+            else if (GameSessionData.Instance.CoinCount == 10)
+                CreateEnemy(_mummy);
+            else if (GameSessionData.Instance.CoinCount == 20)
+                GameSessionData.Instance.PathFinder = new AStarPathFinder();
+            else if (GameSessionData.Instance.CoinCount > 20)
+                GameSessionData.Instance.Enemies.ForEach(enemy => enemy.IncreaseSpeed());
+        }
+
+        private void AddGameInfo()
+        {
+            var gameDuration = _finishTime - _startTime;
+
+            var scoreItem = new ScoreItemDto
+            {
+                Name = GameSessionData.Instance.UserName,
+                Score = GameSessionData.Instance.CoinCount.ToString(),
+                Date = DateTime.Today.ToShortDateString(),
+                Duration = gameDuration.ToString(),
+                Result = _escapeType.ToString()
+            };
+
+            GameSessionData.Instance.Scores.AddFirst(scoreItem);
+        }
+
         private void CreateEnemy(MovableEnemy enemy)
         {
-            var rand = new System.Random();
-
             var groundPoints = GameSessionData.Instance.GetGroundPoints();
-            //var activeCoins = GameSessionData.GetInstance().Coins.Where(coin => coin.gameObject.activeSelf);
 
+            var rand = new System.Random();
             var point = groundPoints[rand.Next(0, groundPoints.Count)];
-
-            //while (activeCoins.Any(coin => (int)coin.transform.position.x == point.X && (int)coin.transform.position.y == point.Y))
-            //    point = groundPoints[rand.Next(0, groundPoints.Count)];
 
             var createdEnemy = Instantiate(enemy, new Vector3(point.X, point.Y), transform.rotation);
             GameSessionData.Instance.Enemies.Add(createdEnemy);
@@ -182,28 +144,48 @@ namespace Assets.Scripts
         {
             while (true)
             {
+                //
+                // Try to use alredy created coin.
+                //
                 var availableCoin = GameSessionData.Instance.Coins.FirstOrDefault(coin => !coin.gameObject.activeSelf);
                 if (availableCoin != null)
                 {
                     availableCoin.Show();
-                    yield return new WaitForSeconds(5);
+                    yield return new WaitForSeconds(_coinAppearanceIntervalSec);
                 }
 
-                //var rand = new System.Random();
-
-                if (GameSessionData.Instance.Coins.Count < MaxCoinCount)
+                //
+                // Create a new one if all coins are active.
+                //
+                if (GameSessionData.Instance.Coins.Count < _maxCoinsCountInMaze)
                 {
-                    //var availablePoints = GameSessionData.GetInstance().GetGroundPoints();
-                    //var point = availablePoints[rand.Next(0, availablePoints.Count)];
-
                     var coin = Instantiate(_coin);
                     coin.Show();
 
                     GameSessionData.Instance.Coins.Add(coin);
                 }
 
-                yield return new WaitForSeconds(5);
+                yield return new WaitForSeconds(_coinAppearanceIntervalSec);
             }
+        }
+
+        private void PlayerDied()
+        {
+            _escapeType = EscapeType.Dead;
+
+            SceneManager.LoadScene("FinishScene");
+        }
+
+        private void FinishGame()
+        {
+            _finishTime = DateTime.Now;
+
+            GameSessionData.Instance.Coins.ForEach(coin => coin.PickUp());
+
+            StopCoroutine("CreateCoin");
+            _player.OnDestroyEvent -= PlayerDied;
+
+            AddGameInfo();
         }
     }
 }

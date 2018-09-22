@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Assets.Classes;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -10,29 +11,20 @@ namespace Assets.Scripts
         [SerializeField] private GameObject _wall;
 
         public bool[,] Data { get; private set; }
+
         public float HallWidth { get; private set; }
         public float HallHeight { get; private set; }
+
         public int StartRow { get; private set; }
         public int StartCol { get; private set; }
-        public int GoalRow { get; private set; }
-        public int GoalCol { get; private set; }
 
         private MazeDataGenerator _dataGenerator;
 
-        public MazeBuilder(bool showDebug)
-        {
-            _showDebug = showDebug;
-        }
-
-        void Start()
-        {
-            _floor = Resources.Load("Ground") as GameObject;
-            _wall = Resources.Load("Wall") as GameObject;
-        }
-
         void Awake()
         {
-            // default to walls surrounding a single empty cell
+            //
+            // Default to walls surrounding a single empty cell.
+            //
             Data = new[,]
             {
                 {true, true, true},
@@ -41,18 +33,19 @@ namespace Assets.Scripts
             };
         }
 
+        void Start()
+        {
+            //_floor = Resources.Load("Ground") as GameObject;
+            //_wall = Resources.Load("Wall") as GameObject;
+        }
+
         public void GenerateNewMaze(int sizeRows, int sizeCols)
         {
-            if (sizeRows % 2 == 0 && sizeCols % 2 == 0)
-            {
-                Debug.LogError("Odd numbers work better for dungeon size.");
-            }
-
             _dataGenerator = new MazeDataGenerator();
 
             DisposeOldMaze();
 
-            Data = _dataGenerator.FromDimensions(sizeRows, sizeCols);
+            Data = _dataGenerator.Generate(sizeRows, sizeCols);
 
             FindStartPosition();
 
@@ -64,40 +57,34 @@ namespace Assets.Scripts
 
         private void DisplayMaze()
         {
-            var go = new GameObject();
-            go.transform.position = Vector3.zero;
-            go.name = "Procedural Maze";
-            go.tag = "Generated";
+            var newObject = new GameObject
+            {
+                name = "Procedural Maze",
+                tag = "GeneratedMazeObject"
+            };
 
             var maze = Data;
             var rMax = maze.GetUpperBound(0);
             var cMax = maze.GetUpperBound(1);
 
-            //loop top to bottom, left to right
+            //
+            // Loop top to bottom, left to right.
+            //
             for (var i = rMax; i >= 0; i--)
             {
                 for (var j = 0; j <= cMax; j++)
                 {
                     if (maze[i, j] == false)
                     {
-                        go = Instantiate(_floor);
-                        go.transform.position = new Vector3(i, j, 0.5f);
+                        newObject = Instantiate(_floor);
+                        newObject.transform.position = new Vector3(i, j, 0.5f);
                     }
                     else
                     {
-                        go = Instantiate(_wall);
-                        go.transform.position = new Vector2(i, j);
+                        newObject = Instantiate(_wall);
+                        newObject.transform.position = new Vector2(i, j);
                     }
                 }
-            }
-        }
-
-        public void DisposeOldMaze()
-        {
-            var objects = GameObject.FindGameObjectsWithTag("Generated");
-            foreach (var go in objects)
-            {
-                Destroy(go);
             }
         }
 
@@ -121,38 +108,14 @@ namespace Assets.Scripts
             }
         }
 
-        // top-down debug display
-        //private void OnGUI()
-        //{
-        //    if (!_showDebug)
-        //    {
-        //        return;
-        //    }
+        public void DisposeOldMaze()
+        {
+            var mazeObjects = GameObject.FindGameObjectsWithTag("GeneratedMazeObject");
 
-        //    var maze = Data;
-        //    var rMax = maze.GetUpperBound(0);
-        //    var cMax = maze.GetUpperBound(1);
-
-        //    var msg = string.Empty;
-
-        //    // loop top to bottom, left to right
-        //    for (var i = rMax; i >= 0; i--)
-        //    {
-        //        for (var j = 0; j <= cMax; j++)
-        //        {
-        //            if (maze[i, j] == false)
-        //            {
-        //                msg += "....";
-        //            }
-        //            else
-        //            {
-        //                msg += "==";
-        //            }
-        //        }
-        //        msg += "\n";
-        //    }
-
-        //    GUI.Label(new Rect(20, 20, 500, 500), msg);
-        //}
+            foreach (var obj in mazeObjects)
+            {
+                Destroy(obj);
+            }
+        }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Assets.Classes
 {
+    /// <summary>
+    /// The lightweight object to keep score data.
+    /// </summary>
     [Serializable]
     public sealed class ScoreItemDto
     {
