@@ -27,7 +27,7 @@ namespace Assets.Scripts
 
         public IPathFinder PathFinder { get; set; }
 
-        private IScoresDataManager _scoresDataManager;
+        private readonly IDataManager<ScoreItemDto> _dataManager;
 
         private GameSessionData()
         {
@@ -36,13 +36,13 @@ namespace Assets.Scripts
 
             //Game = GameObject.Find("Game").GetComponent<GameController>();
 
-            _scoresDataManager = new ScoresJsonToFileDataManager();
-            Scores = new LinkedList<ScoreItemDto>(_scoresDataManager.Load());
+            _dataManager = new JsonToFileDataManager<ScoreItemDto>(string.Format("{0}\\Data\\scores.txt", Application.dataPath));
+            Scores = new LinkedList<ScoreItemDto>(_dataManager.Load());
         }
 
         public void Save()
         {
-            _scoresDataManager.Save(Scores.ToList());
+            _dataManager.Save(Scores.ToList());
         }
 
         public void InitializeSession()

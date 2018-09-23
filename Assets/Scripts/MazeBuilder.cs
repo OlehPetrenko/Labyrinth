@@ -45,7 +45,7 @@ namespace Assets.Scripts
 
             DisposeOldMaze();
 
-            Data = _dataGenerator.Generate(sizeRows, sizeCols);
+            Data = _dataGenerator.GenerateMaze(sizeRows, sizeCols);
 
             FindStartPosition();
 

@@ -22,31 +22,21 @@ namespace Assets.Scripts
         private DateTime _startTime;
         private DateTime _finishTime;
 
-        [SerializeField]
-        private MazeBuilder _mazeBuilder;
+        [SerializeField] private MazeBuilder _mazeBuilder;
 
-        [SerializeField]
-        private int _mazeRowsSize;
-        [SerializeField]
-        private int _mazeColsSize;
+        [SerializeField] private int _mazeRowsSize;
+        [SerializeField] private int _mazeColsSize;
 
-        [SerializeField]
-        private Player _player;
+        [SerializeField] private Player _player;
 
-        [SerializeField]
-        private MovableEnemy _zombie;
-        [SerializeField]
-        private MovableEnemy _mummy;
+        [SerializeField] private MovableEnemy _zombie;
+        [SerializeField] private MovableEnemy _mummy;
 
-        [SerializeField]
-        private int _maxCoinsCountInMaze;
-        [SerializeField]
-        private int _coinAppearanceIntervalSec;
+        [SerializeField] private int _maxCoinsCountInMaze;
+        [SerializeField] private int _coinAppearanceIntervalSec;
 
-        [SerializeField]
-        private Coin _coin;
-        [SerializeField]
-        private Text _score;
+        [SerializeField] private Coin _coin;
+        [SerializeField] private Text _score;
 
 
         private void Awake()

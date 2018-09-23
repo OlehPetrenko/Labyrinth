@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace Assets.Classes
 {
+    /// <summary>
+    /// Extends the default <see cref="JsonUtility"/>.
+    /// Allows to work with a <see cref="List{T}"/>.
+    /// </summary>
     public static class JsonHelper
     {
         public static List<T> FromJson<T>(string json)
@@ -24,6 +28,7 @@ namespace Assets.Classes
             return JsonUtility.ToJson(wrapper, prettyPrint);
         }
 
+
         [Serializable]
         private class Wrapper<T>
         {
@@ -31,4 +36,3 @@ namespace Assets.Classes
         }
     }
 }
-

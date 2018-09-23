@@ -2,17 +2,15 @@
 
 namespace Assets.Classes
 {
+    /// <summary>
+    /// Provides functionality to generate data for a maze.
+    /// </summary>
     public class MazeDataGenerator
     {
-        private float PlacementThreshold { get; set; }
+        private const float PlacementThreshold = .3f;
 
 
-        public MazeDataGenerator()
-        {
-            PlacementThreshold = .3f;
-        }
-
-        public bool[,] Generate(int sizeRows, int sizeCols)
+        public bool[,] GenerateMaze(int sizeRows, int sizeCols)
         {
             var maze = new bool[sizeRows, sizeCols];
 
@@ -29,7 +27,7 @@ namespace Assets.Classes
                     if (i == 0 || j == 0 || i == rMax || j == cMax)
                         maze[i, j] = true;
 
-                    //
+                    // 
                     // Every other inside space.
                     //
                     else if (i % 2 == 0 && j % 2 == 0)
@@ -41,15 +39,21 @@ namespace Assets.Classes
                             //
                             // In addition to this spot, randomly place adjacent.
                             //
-                            var a = Random.value < .2 ? 0 : (Random.value < .2 ? -1 : 1);
-                            var b = a != 0 ? 0 : (Random.value < .2 ? -1 : 1);
-                            maze[i + a, j + b] = true;
+                            FillAdjacentSpot(maze, i, j);
                         }
                     }
                 }
             }
 
             return maze;
+        }
+
+        private static void FillAdjacentSpot(bool[,] maze, int row, int column)
+        {
+            var rowShift = Random.value < .2 ? 0 : (Random.value < .2 ? -1 : 1);
+            var columnShift = rowShift != 0 ? 0 : (Random.value < .2 ? -1 : 1);
+
+            maze[row + rowShift, column + columnShift] = true;
         }
     }
 }

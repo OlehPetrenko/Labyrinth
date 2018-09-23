@@ -1,35 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Assets.Interfaces;
 using Assets.Scripts;
 
 namespace Assets.Classes.PathFinder
 {
+    /// <summary>
+    /// Provides logic to get a valid random point for further moving.
+    /// </summary>
     public sealed class RandomPathFinder : IPathFinder
     {
+        private readonly PathFinderHelper _helper;
+
+
+        public RandomPathFinder()
+        {
+            _helper = new PathFinderHelper();
+        }
+
         public List<Point> FindPath(bool[,] field, Point start, Point goal)
         {
-            var availablePoints = new List<Point>();
+            var neighbourPoints = _helper.GetNeighbourPoints(start);
 
-            if (!GameSessionData.Instance.Maze[start.X, start.Y - 1])
-                availablePoints.Add(new Point { X = start.X, Y = start.Y - 1 });
-
-            if (!GameSessionData.Instance.Maze[start.X, start.Y + 1])
-                availablePoints.Add(new Point { X = start.X, Y = start.Y + 1 });
-
-            if (!GameSessionData.Instance.Maze[start.X - 1, start.Y])
-                availablePoints.Add(new Point { X = start.X - 1, Y = start.Y });
-
-            if (!GameSessionData.Instance.Maze[start.X + 1, start.Y])
-                availablePoints.Add(new Point { X = start.X + 1, Y = start.Y });
+            var availablePoints = neighbourPoints.Where(point => _helper.IsPointAvailableToMove(field, point)).ToList();
 
             var rand = new Random();
 
-            var point = availablePoints[rand.Next(0, availablePoints.Count)];
+            var availablePoint = availablePoints[rand.Next(0, availablePoints.Count)];
 
-            return new List<Point> { point };
+            return new List<Point> { availablePoint };
         }
     }
 }
