@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using Assets.Classes;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

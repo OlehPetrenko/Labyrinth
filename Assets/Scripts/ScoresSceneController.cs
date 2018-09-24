@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
-using Mono.Xml;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,24 +10,16 @@ namespace Assets.Scripts
 {
     public class ScoresSceneController : MonoBehaviour
     {
-        [SerializeField]
-        private int _numberOfShownItems;
-
-        [SerializeField]
-        private int _spacing;
-
-        [SerializeField]
-        private int _startPositionY;
-
-
-        private List<ScoreItem> _scoreItems;
-
-        private List<ScoreItemDto> _scores;
+        [SerializeField] private int _numberOfShownItems;
+        [SerializeField] private int _spacing;
+        [SerializeField] private int _startPositionY;
 
         private GameObject _items;
 
-        private int _index = -1;
+        private List<ScoreItemDto> _scores;
+        private List<ScoreItem> _scoreItems;
 
+        private int _index = -1;
         private int _itemHeightWithSpacing;
 
         private List<ScoreItemDto> Scores
@@ -42,6 +33,7 @@ namespace Assets.Scripts
             }
         }
 
+
         private void Awake()
         {
 
@@ -50,6 +42,39 @@ namespace Assets.Scripts
             GameObject.Find("ScrollRect").GetComponent<ScrollRect>().onValueChanged.AddListener(ListenerMethod);
 
             InitializeScores();
+        }
+
+        private void InitializeScores()
+        {
+            _scoreItems = new List<ScoreItem>();
+            var scoreItemResource = Resources.Load("ScoreItem", typeof(ScoreItem)) as ScoreItem;
+
+            if (scoreItemResource == null || scoreItemResource.GetComponent<RectTransform>() == null)
+                return;
+
+            _itemHeightWithSpacing = (int)scoreItemResource.GetComponent<RectTransform>().rect.height + _spacing;
+
+            //
+            // If number of score items less than max number of items on UI
+            // create only the right amount of objects.
+            //
+            if (_numberOfShownItems > Scores.Count)
+                _numberOfShownItems = Scores.Count;
+
+            for (var i = 0; i < _numberOfShownItems; i++)
+            {
+                var scoreItem = Instantiate(scoreItemResource, _items.transform);
+                var scoreItemRectTransform = scoreItem.GetComponent<RectTransform>();
+
+                var position = _startPositionY - _itemHeightWithSpacing * i;
+
+                scoreItemRectTransform.localPosition = new Vector3(0, position, 0);
+                scoreItemRectTransform.localScale = Vector3.one;
+
+                FillScoreItem(scoreItem, Scores[i]);
+
+                _scoreItems.Add(scoreItem);
+            }
         }
 
         public void ListenerMethod(Vector2 value)
@@ -104,37 +129,13 @@ namespace Assets.Scripts
             FillScoreItem(bottomItem, scoreItemDto);
         }
 
-        private void InitializeScores()
+        private void FillScoreItem(ScoreItem scoreItem, ScoreItemDto scoreItemDto)
         {
-            _scoreItems = new List<ScoreItem>();
-            var scoreItemResource = Resources.Load("ScoreItem", typeof(ScoreItem)) as ScoreItem;
-
-            if (scoreItemResource == null || scoreItemResource.GetComponent<RectTransform>() == null)
-                return;
-
-            _itemHeightWithSpacing = (int)scoreItemResource.GetComponent<RectTransform>().rect.height + _spacing;
-
-            //
-            // If number of score items less than max number of items on UI
-            // create only the right amount of objects.
-            //
-            if (_numberOfShownItems > Scores.Count)
-                _numberOfShownItems = Scores.Count;
-
-            for (var i = 0; i < _numberOfShownItems; i++)
-            {
-                var scoreItem = Instantiate(scoreItemResource, _items.transform);
-                var scoreItemRectTransform = scoreItem.GetComponent<RectTransform>();
-
-                var position = _startPositionY - _itemHeightWithSpacing * i;
-
-                scoreItemRectTransform.localPosition = new Vector3(0, position, 0);
-                scoreItemRectTransform.localScale = Vector3.one;
-
-                FillScoreItem(scoreItem, Scores[i]);
-
-                _scoreItems.Add(scoreItem);
-            }
+            scoreItem.Name = scoreItemDto.Name;
+            scoreItem.Score = scoreItemDto.Score;
+            scoreItem.Date = scoreItemDto.Date;
+            scoreItem.Duration = scoreItemDto.Duration;
+            scoreItem.Result = scoreItemDto.Result;
         }
 
         private ScoreItem GetFirstItem()
@@ -147,15 +148,6 @@ namespace Assets.Scripts
         {
             var minY = (int)_scoreItems.Min(score => score.GetComponent<RectTransform>().localPosition.y);
             return _scoreItems.First(score => (int)score.GetComponent<RectTransform>().localPosition.y == minY);
-        }
-
-        private void FillScoreItem(ScoreItem scoreItem, ScoreItemDto scoreItemDto)
-        {
-            scoreItem.Name = scoreItemDto.Name;
-            scoreItem.Score = scoreItemDto.Score;
-            scoreItem.Date = scoreItemDto.Date;
-            scoreItem.Duration = scoreItemDto.Duration;
-            scoreItem.Result = scoreItemDto.Result;
         }
 
         public void OpenMainMenu()

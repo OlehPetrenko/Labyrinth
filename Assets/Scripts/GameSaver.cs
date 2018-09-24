@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Assets.Classes;
+using UnityEngine;
 
 namespace Assets.Scripts
 {

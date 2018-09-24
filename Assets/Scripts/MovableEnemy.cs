@@ -13,9 +13,8 @@ namespace Assets.Scripts
     public class MovableEnemy : Unit, IMovable, IAttackable
     {
         private bool _shouldMove;
+        private LinkedList<Point> _path;
 
-        private int _goalX;
-        private int _goalY;
 
         public float Speed { get; set; }
 
@@ -24,38 +23,15 @@ namespace Assets.Scripts
             base.Awake();
 
             State = UnitState.Move;
-            //Speed = 0F;
             Speed = 1.5F;
 
-            _goalX = (int)transform.position.x;
-            _goalY = (int)transform.position.y;
-
             _shouldMove = true;
-
-            _coin = Resources.Load("Coin", typeof(Coin)) as Coin;
         }
 
-        private Coin _coin;
         protected virtual void Update()
         {
             if (_shouldMove)
                 Move();
-
-            //if (Input.GetButton("Jump"))
-            //{
-            //    var player = GameObject.Find("Player");
-            //    var playerPoint = new Point((int)player.transform.position.x, (int)player.transform.position.y);
-
-            //    var currentPoint = new Point((int)transform.position.x, (int)transform.position.y);
-            //    var pathFinder = new AStarPathFinder();
-
-            //    var list = pathFinder.FindPath(GameSessionData.GetInstance().Maze, currentPoint, playerPoint);
-            //    foreach (var point in list)
-            //    {
-            //        Instantiate(_coin, new Vector3(point.X, point.Y), transform.rotation);
-            //        Debug.Log(string.Format("{0}:{1}", point.X, point.Y));
-            //    }
-            //}
         }
 
         private void OnTriggerEnter2D(Collider2D collider)
@@ -82,29 +58,25 @@ namespace Assets.Scripts
             // Increase speed on 5%.
             //
             Speed += Speed * 0.05F;
-            Debug.Log(Speed);
         }
 
-        private LinkedList<Point> _path;
 
         private void UpdatePath()
         {
             var currentPoint = new Point((int)transform.position.x, (int)transform.position.y);
+
 
             if (_path != null && _path.Any() && _path.First.Value == currentPoint)
                 _path.RemoveFirst();
 
             if (_path == null || !_path.Any())
             {
-                var player = GameObject.Find("Player");
+                var playerPoint = new Point(
+                    (int)GameSessionData.Instance.Player.transform.position.x,
+                    (int)GameSessionData.Instance.Player.transform.position.y);
 
-                _path = new LinkedList<Point>(GameSessionData.Instance.PathFinder.FindPath(
-                    GameSessionData.Instance.Maze, 
-                    currentPoint, 
-                    new Point((int)player.transform.position.x, (int)player.transform.position.y)));
+                _path = GameSessionData.Instance.PathFinder.FindPath(GameSessionData.Instance.Maze, currentPoint, playerPoint);
             }
-
-
         }
 
         public virtual void Move()
@@ -128,32 +100,32 @@ namespace Assets.Scripts
             //    GoToPointY(_goalY);
         }
 
-        private void UpdateDirection()
-        {
-            var currentX = (int)transform.position.x;
-            var currentY = (int)transform.position.y;
+        //private void UpdateDirection()
+        //{
+        //    var currentX = (int)transform.position.x;
+        //    var currentY = (int)transform.position.y;
 
-            var availablePoints = new List<Point>();
+        //    var availablePoints = new List<Point>();
 
-            if (!GameSessionData.Instance.Maze[currentX, currentY])
-                availablePoints.Add(new Point { X = currentX, Y = currentY - 1 });
+        //    if (!GameSessionData.Instance.Maze[currentX, currentY])
+        //        availablePoints.Add(new Point { X = currentX, Y = currentY - 1 });
 
-            if (!GameSessionData.Instance.Maze[currentX, currentY + 1])
-                availablePoints.Add(new Point { X = currentX, Y = currentY + 1 });
+        //    if (!GameSessionData.Instance.Maze[currentX, currentY + 1])
+        //        availablePoints.Add(new Point { X = currentX, Y = currentY + 1 });
 
-            if (!GameSessionData.Instance.Maze[currentX - 1, currentY])
-                availablePoints.Add(new Point { X = currentX - 1, Y = currentY });
+        //    if (!GameSessionData.Instance.Maze[currentX - 1, currentY])
+        //        availablePoints.Add(new Point { X = currentX - 1, Y = currentY });
 
-            if (!GameSessionData.Instance.Maze[currentX + 1, currentY])
-                availablePoints.Add(new Point { X = currentX + 1, Y = currentY });
+        //    if (!GameSessionData.Instance.Maze[currentX + 1, currentY])
+        //        availablePoints.Add(new Point { X = currentX + 1, Y = currentY });
 
-            var rand = new System.Random();
+        //    var rand = new System.Random();
 
-            var point = availablePoints[rand.Next(0, availablePoints.Count)];
+        //    var point = availablePoints[rand.Next(0, availablePoints.Count)];
 
-            _goalX = point.X;
-            _goalY = point.Y;
-        }
+        //    _goalX = point.X;
+        //    _goalY = point.Y;
+        //}
 
         private void GoToPointX(int goalX)
         {
@@ -164,8 +136,6 @@ namespace Assets.Scripts
             transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, Speed * Time.smoothDeltaTime);
 
             Sprite.flipX = direction.x > 0;
-
-
         }
 
         private void GoToPointY(int goalY)
@@ -175,8 +145,6 @@ namespace Assets.Scripts
             var direction = transform.up * (goalY > currentY ? 1 : -1);
 
             transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, Speed * Time.smoothDeltaTime);
-
-
         }
 
         public void Attack(Unit targetUnit)

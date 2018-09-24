@@ -12,6 +12,7 @@ namespace Assets.Scripts
 
         public float Speed { get; set; }
 
+
         protected override void Awake()
         {
             Speed = 2.0F;
@@ -19,28 +20,26 @@ namespace Assets.Scripts
             base.Awake();
         }
 
+        private void Update()
+        {
+            State = UnitState.Idle;
+
+            if (Input.GetButton("Horizontal") || Input.GetButton("Vertical"))
+                Move();
+        }
 
         private void OnTriggerEnter2D(Collider2D collider)
         {
             var coin = collider.GetComponent<Coin>();
 
-            if (coin) // or if(gameObject.CompareTag("YourWallTag"))
-            {
+            if (coin)
                 coin.PickUp();
-
-                GameSessionData.Instance.Game.UpdateScore();
-            }
         }
 
-
-        private void Update()
+        private void OnDestroy()
         {
-            //Physics.defaultContactOffset = 0.01F;
-
-            State = UnitState.Idle;
-
-            if (Input.GetButton("Horizontal") || Input.GetButton("Vertical"))
-                Move();
+            if (this.OnDestroyEvent != null)
+                OnDestroyEvent();
         }
 
         public void Move()
@@ -58,13 +57,6 @@ namespace Assets.Scripts
             Sprite.flipX = direction.x < 0;
 
             State = UnitState.Move;
-        }
-
-        void OnDestroy()
-        {
-            if (this.OnDestroyEvent != null)
-                OnDestroyEvent();
-
         }
     }
 }

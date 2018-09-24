@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Assets.Classes;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -8,9 +10,18 @@ namespace Assets.Scripts
     /// </summary>
     public class Coin : MonoBehaviour
     {
+        public event Action OnDisableEvent;
+
+
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
+        }
+
+        private void OnDisable()
+        {
+            if (OnDisableEvent != null)
+                OnDisableEvent();
         }
 
         public void PickUp()
@@ -22,7 +33,7 @@ namespace Assets.Scripts
         {
             var rand = new System.Random();
 
-            var groundPoints = GameSessionData.Instance.GetGroundPoints();
+            var groundPoints = GameSessionData.Instance.GroundPoints;
             var activeCoins = GameSessionData.Instance.Coins.Where(coin => coin.gameObject.activeSelf);
 
             var point = groundPoints[rand.Next(0, groundPoints.Count)];

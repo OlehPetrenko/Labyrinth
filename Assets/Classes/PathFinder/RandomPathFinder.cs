@@ -19,7 +19,7 @@ namespace Assets.Classes.PathFinder
             _helper = new PathFinderHelper();
         }
 
-        public List<Point> FindPath(bool[,] field, Point start, Point goal)
+        public LinkedList<Point> FindPath(bool[,] field, Point start, Point goal)
         {
             var neighbourPoints = _helper.GetNeighbourPoints(start);
 
@@ -29,7 +29,10 @@ namespace Assets.Classes.PathFinder
 
             var availablePoint = availablePoints[rand.Next(0, availablePoints.Count)];
 
-            return new List<Point> { availablePoint };
+            var result = new LinkedList<Point>();
+            result.AddFirst(availablePoint);
+
+            return result;
         }
     }
 }

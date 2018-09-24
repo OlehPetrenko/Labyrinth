@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
 using Assets.Classes.PathFinder;
@@ -79,6 +80,10 @@ namespace Assets.Scripts
             GameSessionData.Instance.PathFinder = new RandomPathFinder();
 
             CreateEnemy(_zombie);
+
+            if (GameSessionData.Instance.Coins != null)
+                GameSessionData.Instance.Coins.ForEach(coin => coin.OnDisableEvent += UpdateScore);
+
             StartCoroutine("CreateCoin");
         }
 
@@ -121,7 +126,7 @@ namespace Assets.Scripts
 
         private void CreateEnemy(MovableEnemy enemy)
         {
-            var groundPoints = GameSessionData.Instance.GetGroundPoints();
+            var groundPoints = GameSessionData.Instance.GroundPoints;
 
             var rand = new System.Random();
             var point = groundPoints[rand.Next(0, groundPoints.Count)];
@@ -132,6 +137,9 @@ namespace Assets.Scripts
 
         IEnumerator CreateCoin()
         {
+            if (GameSessionData.Instance.Coins == null)
+                GameSessionData.Instance.Coins = new List<Coin>(_maxCoinsCountInMaze);
+
             while (true)
             {
                 //
@@ -150,6 +158,7 @@ namespace Assets.Scripts
                 if (GameSessionData.Instance.Coins.Count < _maxCoinsCountInMaze)
                 {
                     var coin = Instantiate(_coin);
+                    coin.OnDisableEvent += UpdateScore;
                     coin.Show();
 
                     GameSessionData.Instance.Coins.Add(coin);
@@ -170,7 +179,11 @@ namespace Assets.Scripts
         {
             _finishTime = DateTime.Now;
 
-            GameSessionData.Instance.Coins.ForEach(coin => coin.PickUp());
+            if (GameSessionData.Instance.Coins != null)
+            {
+                GameSessionData.Instance.Coins.ForEach(coin => coin.OnDisableEvent -= UpdateScore);
+                GameSessionData.Instance.Coins.ForEach(coin => coin.PickUp());
+            }
 
             StopCoroutine("CreateCoin");
             _player.OnDestroyEvent -= PlayerDied;

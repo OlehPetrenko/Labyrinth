@@ -20,7 +20,7 @@ namespace Assets.Classes.PathFinder
             _helper = new PathFinderHelper();
         }
 
-        public List<Point> FindPath(bool[,] field, Point start, Point goal)
+        public LinkedList<Point> FindPath(bool[,] field, Point start, Point goal)
         {
             var closedSet = new List<PathNode>();
             var openSet = new List<PathNode>();
@@ -101,18 +101,17 @@ namespace Assets.Classes.PathFinder
             return Math.Abs(from.X - to.X) + Math.Abs(from.Y - to.Y);
         }
 
-        private List<Point> GetPathForNode(PathNode pathNode)
+        private LinkedList<Point> GetPathForNode(PathNode pathNode)
         {
-            var result = new List<Point>();
+            var result = new LinkedList<Point>();
             var currentNode = pathNode;
 
             while (currentNode != null)
             {
-                result.Add(currentNode.Position);
+                result.AddFirst(currentNode.Position);
                 currentNode = currentNode.CameFrom;
             }
 
-            result.Reverse();
             return result;
         }
     }
