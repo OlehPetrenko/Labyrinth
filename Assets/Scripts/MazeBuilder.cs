@@ -3,12 +3,15 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class MazeBuilder : MonoBehaviour
+    /// <summary>
+    /// The object to build a maze.
+    /// </summary>
+    public sealed class MazeBuilder : MonoBehaviour
     {
-        [SerializeField] private bool _showDebug;
-
         [SerializeField] private GameObject _floor;
         [SerializeField] private GameObject _wall;
+
+        private MazeDataGenerator _dataGenerator;
 
         public bool[,] Data { get; private set; }
 
@@ -18,9 +21,8 @@ namespace Assets.Scripts
         public int StartRow { get; private set; }
         public int StartCol { get; private set; }
 
-        private MazeDataGenerator _dataGenerator;
 
-        void Awake()
+        private void Awake()
         {
             //
             // Default to walls surrounding a single empty cell.
@@ -31,12 +33,6 @@ namespace Assets.Scripts
                 {true, false, true},
                 {true, true, true}
             };
-        }
-
-        void Start()
-        {
-            //_floor = Resources.Load("Ground") as GameObject;
-            //_wall = Resources.Load("Wall") as GameObject;
         }
 
         public void GenerateNewMaze(int sizeRows, int sizeCols)
@@ -59,9 +55,11 @@ namespace Assets.Scripts
         {
             var newObject = new GameObject
             {
-                name = "Procedural Maze",
-                tag = "GeneratedMazeObject"
+                name = "Maze Item",
+                tag = "GeneratedMazeObject",
             };
+
+            newObject.transform.SetParent(transform);
 
             var maze = Data;
             var rMax = maze.GetUpperBound(0);
@@ -76,12 +74,12 @@ namespace Assets.Scripts
                 {
                     if (maze[i, j] == false)
                     {
-                        newObject = Instantiate(_floor);
+                        newObject = Instantiate(_floor, transform);
                         newObject.transform.position = new Vector3(i, j, 0.5f);
                     }
                     else
                     {
-                        newObject = Instantiate(_wall);
+                        newObject = Instantiate(_wall, transform);
                         newObject.transform.position = new Vector2(i, j);
                     }
                 }

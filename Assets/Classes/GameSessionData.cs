@@ -2,11 +2,15 @@
 using System.Linq;
 using Assets.Interfaces;
 using Assets.Scripts;
+using Assets.Scripts.Units;
 using UnityEngine;
 
 namespace Assets.Classes
 {
-    public class GameSessionData
+    /// <summary>
+    /// The singleton object with game data.
+    /// </summary>
+    public sealed class GameSessionData
     {
         private static readonly GameSessionData _instance = new GameSessionData();
 
@@ -15,10 +19,11 @@ namespace Assets.Classes
         private bool[,] _maze;
         private List<Point> _groundPoints;
 
+
         public static GameSessionData Instance { get { return _instance; } }
 
         public string UserName { get; set; }
-        public int CoinCount { get; set; }
+        public int Score { get; set; }
 
         public List<Coin> Coins { get; set; }
         public LinkedList<ScoreItemDto> Scores { get; set; }
@@ -79,7 +84,7 @@ namespace Assets.Classes
         {
             Player = GameObject.Find("Player").GetComponent<Player>();
 
-            CoinCount = 0;
+            Score = 0;
             Enemies = new List<MovableEnemy>();
             PathFinder = null;
         }

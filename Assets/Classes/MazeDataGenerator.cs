@@ -5,7 +5,7 @@ namespace Assets.Classes
     /// <summary>
     /// Provides functionality to generate data for a maze.
     /// </summary>
-    public class MazeDataGenerator
+    public sealed class MazeDataGenerator
     {
         private const float PlacementThreshold = .3f;
 

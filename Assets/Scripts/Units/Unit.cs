@@ -1,7 +1,7 @@
 ﻿using Assets.Classes;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Units
 {
     /// <summary>
     /// Provides basic logic for units.

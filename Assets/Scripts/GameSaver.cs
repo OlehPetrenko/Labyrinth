@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class GameSaver : MonoBehaviour
+    /// <summary>
+    /// The singleton object for processing data saving before the game is closed.
+    /// </summary>
+    public sealed class GameSaver : MonoBehaviour
     {
         public void Awake()
         {

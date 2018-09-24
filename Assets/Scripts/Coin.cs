@@ -8,13 +8,16 @@ namespace Assets.Scripts
     /// <summary>
     /// Provides logic for a coin.
     /// </summary>
-    public class Coin : MonoBehaviour
+    public sealed class Coin : MonoBehaviour
     {
         public event Action OnDisableEvent;
 
 
         private void Awake()
         {
+            //
+            // Don't destroy coin object to use it for further game sessions.
+            //
             DontDestroyOnLoad(gameObject);
         }
 

@@ -1,29 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Assets.Classes;
-using Assets.Classes.PathFinder;
 using Assets.Interfaces;
-using UnityEditor;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Units
 {
+    /// <summary>
+    /// Provides base logic for a enemy that can move.
+    /// </summary>
     public class MovableEnemy : Unit, IMovable, IAttackable
     {
         private bool _shouldMove;
         private LinkedList<Point> _path;
 
+        protected float Speed { get; set; }
 
-        public float Speed { get; set; }
 
         protected override void Awake()
         {
             base.Awake();
 
             State = UnitState.Move;
-            Speed = 1.5F;
+            Speed = 1f;
 
             _shouldMove = true;
         }
@@ -65,18 +64,17 @@ namespace Assets.Scripts
         {
             var currentPoint = new Point((int)transform.position.x, (int)transform.position.y);
 
-
             if (_path != null && _path.Any() && _path.First.Value == currentPoint)
                 _path.RemoveFirst();
 
-            if (_path == null || !_path.Any())
-            {
-                var playerPoint = new Point(
-                    (int)GameSessionData.Instance.Player.transform.position.x,
-                    (int)GameSessionData.Instance.Player.transform.position.y);
+            if (_path != null && _path.Any())
+                return;
 
-                _path = GameSessionData.Instance.PathFinder.FindPath(GameSessionData.Instance.Maze, currentPoint, playerPoint);
-            }
+            var playerPoint = new Point(
+                (int)GameSessionData.Instance.Player.transform.position.x,
+                (int)GameSessionData.Instance.Player.transform.position.y);
+
+            _path = GameSessionData.Instance.PathFinder.FindPath(GameSessionData.Instance.Maze, currentPoint, playerPoint);
         }
 
         public virtual void Move()
@@ -147,13 +145,12 @@ namespace Assets.Scripts
             transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, Speed * Time.smoothDeltaTime);
         }
 
-        public void Attack(Unit targetUnit)
+        public virtual void Attack(Unit targetUnit)
         {
             State = UnitState.Attack;
             _shouldMove = false;
 
             targetUnit.ReceiveDamage();
-
         }
     }
 }

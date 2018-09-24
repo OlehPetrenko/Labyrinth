@@ -1,20 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
-    public class ScoresSceneController : MonoBehaviour
+    /// <summary>
+    /// Provides logic for virtual scroll.
+    /// </summary>
+    public class VirtualScroll : MonoBehaviour
     {
         [SerializeField] private int _numberOfShownItems;
         [SerializeField] private int _spacing;
         [SerializeField] private int _startPositionY;
 
-        private GameObject _items;
+        [SerializeField] private GameObject _items;
+        [SerializeField] private GameObject _scrollRect;
+        [SerializeField] private ScoreItem _scoreItem;
 
         private List<ScoreItemDto> _scores;
         private List<ScoreItem> _scoreItems;
@@ -36,45 +39,9 @@ namespace Assets.Scripts
 
         private void Awake()
         {
-
-            _items = GameObject.Find("Items");
-
-            GameObject.Find("ScrollRect").GetComponent<ScrollRect>().onValueChanged.AddListener(ListenerMethod);
+            _scrollRect.GetComponent<ScrollRect>().onValueChanged.AddListener(ListenerMethod);
 
             InitializeScores();
-        }
-
-        private void InitializeScores()
-        {
-            _scoreItems = new List<ScoreItem>();
-            var scoreItemResource = Resources.Load("ScoreItem", typeof(ScoreItem)) as ScoreItem;
-
-            if (scoreItemResource == null || scoreItemResource.GetComponent<RectTransform>() == null)
-                return;
-
-            _itemHeightWithSpacing = (int)scoreItemResource.GetComponent<RectTransform>().rect.height + _spacing;
-
-            //
-            // If number of score items less than max number of items on UI
-            // create only the right amount of objects.
-            //
-            if (_numberOfShownItems > Scores.Count)
-                _numberOfShownItems = Scores.Count;
-
-            for (var i = 0; i < _numberOfShownItems; i++)
-            {
-                var scoreItem = Instantiate(scoreItemResource, _items.transform);
-                var scoreItemRectTransform = scoreItem.GetComponent<RectTransform>();
-
-                var position = _startPositionY - _itemHeightWithSpacing * i;
-
-                scoreItemRectTransform.localPosition = new Vector3(0, position, 0);
-                scoreItemRectTransform.localScale = Vector3.one;
-
-                FillScoreItem(scoreItem, Scores[i]);
-
-                _scoreItems.Add(scoreItem);
-            }
         }
 
         public void ListenerMethod(Vector2 value)
@@ -87,6 +54,38 @@ namespace Assets.Scripts
                 SetScoreItemAbove();
 
             _index = currentIndex;
+        }
+
+        private void InitializeScores()
+        {
+            _scoreItems = new List<ScoreItem>();
+
+            if (_scoreItem == null || _scoreItem.GetComponent<RectTransform>() == null)
+                return;
+
+            _itemHeightWithSpacing = (int)_scoreItem.GetComponent<RectTransform>().rect.height + _spacing;
+
+            //
+            // If number of score items less than max number of items on UI
+            // create only the right amount of objects.
+            //
+            if (_numberOfShownItems > Scores.Count)
+                _numberOfShownItems = Scores.Count;
+
+            for (var i = 0; i < _numberOfShownItems; i++)
+            {
+                var scoreItem = Instantiate(_scoreItem, _items.transform);
+                var scoreItemRectTransform = scoreItem.GetComponent<RectTransform>();
+
+                var position = _startPositionY - _itemHeightWithSpacing * i;
+
+                scoreItemRectTransform.localPosition = new Vector3(0, position, 0);
+                scoreItemRectTransform.localScale = Vector3.one;
+
+                FillScoreItem(scoreItem, Scores[i]);
+
+                _scoreItems.Add(scoreItem);
+            }
         }
 
         public void SetScoreItemBelow()
@@ -129,15 +128,6 @@ namespace Assets.Scripts
             FillScoreItem(bottomItem, scoreItemDto);
         }
 
-        private void FillScoreItem(ScoreItem scoreItem, ScoreItemDto scoreItemDto)
-        {
-            scoreItem.Name = scoreItemDto.Name;
-            scoreItem.Score = scoreItemDto.Score;
-            scoreItem.Date = scoreItemDto.Date;
-            scoreItem.Duration = scoreItemDto.Duration;
-            scoreItem.Result = scoreItemDto.Result;
-        }
-
         private ScoreItem GetFirstItem()
         {
             var maxY = (int)_scoreItems.Max(score => score.GetComponent<RectTransform>().localPosition.y);
@@ -150,9 +140,13 @@ namespace Assets.Scripts
             return _scoreItems.First(score => (int)score.GetComponent<RectTransform>().localPosition.y == minY);
         }
 
-        public void OpenMainMenu()
+        private void FillScoreItem(ScoreItem scoreItem, ScoreItemDto scoreItemDto)
         {
-            SceneManager.LoadScene("StartScene");
+            scoreItem.Name = scoreItemDto.Name;
+            scoreItem.Score = scoreItemDto.Score;
+            scoreItem.Date = scoreItemDto.Date;
+            scoreItem.Duration = scoreItemDto.Duration;
+            scoreItem.Result = scoreItemDto.Result;
         }
     }
 }

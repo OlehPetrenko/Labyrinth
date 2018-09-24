@@ -3,6 +3,9 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Stores data of the score.
+    /// </summary>
     public class ScoreItem : MonoBehaviour
     {
         private Text _name;

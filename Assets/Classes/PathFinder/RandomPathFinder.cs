@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Interfaces;
-using Assets.Scripts;
 
 namespace Assets.Classes.PathFinder
 {

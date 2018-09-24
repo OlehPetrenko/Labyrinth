@@ -3,12 +3,21 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.SceneControllers
 {
-    public class MainMenuController : MonoBehaviour
+    /// <summary>
+    /// Provides logic for the main menu of the game.
+    /// </summary>
+    public sealed class MainMenuController : MonoBehaviour
     {
         [SerializeField]
         private TMP_InputField _nameField;
+
+
+        private void Awake()
+        {
+            _nameField.text = GameSessionData.Instance.UserName;
+        }
 
         public void SetName()
         {

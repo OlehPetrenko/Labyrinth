@@ -1,21 +1,23 @@
 ﻿using System;
-using System.Security;
 using Assets.Classes;
 using Assets.Interfaces;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Units
 {
+    /// <summary>
+    /// Provides logic for a Player.
+    /// </summary>
     public sealed class Player : Unit, IMovable
     {
         public event Action OnDestroyEvent;
 
-        public float Speed { get; set; }
+        private float _speed;
 
 
         protected override void Awake()
         {
-            Speed = 2.0F;
+            _speed = 2.0f;
 
             base.Awake();
         }
@@ -52,7 +54,7 @@ namespace Assets.Scripts
             if (Input.GetButton("Vertical"))
                 direction = transform.up * Input.GetAxis("Vertical");
 
-            transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, Speed * Time.smoothDeltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, _speed * Time.smoothDeltaTime);
 
             Sprite.flipX = direction.x < 0;
 

@@ -4,13 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.Classes;
 using Assets.Classes.PathFinder;
+using Assets.Scripts.Units;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
-    public class GameController : MonoBehaviour
+    /// <summary>
+    /// Provides main game logic.
+    /// </summary>
+    public sealed class GameController : MonoBehaviour
     {
         private enum EscapeType
         {
@@ -28,8 +32,6 @@ namespace Assets.Scripts
         [SerializeField] private int _mazeRowsSize;
         [SerializeField] private int _mazeColsSize;
 
-        [SerializeField] private Player _player;
-
         [SerializeField] private MovableEnemy _zombie;
         [SerializeField] private MovableEnemy _mummy;
 
@@ -43,8 +45,6 @@ namespace Assets.Scripts
         private void Awake()
         {
             InitializeGameSession();
-
-            _player.OnDestroyEvent += PlayerDied;
         }
 
         private void Start()
@@ -66,12 +66,6 @@ namespace Assets.Scripts
             FinishGame();
         }
 
-        private void CreateMaze()
-        {
-            _mazeBuilder.GenerateNewMaze(_mazeRowsSize, _mazeColsSize);
-            GameSessionData.Instance.Maze = _mazeBuilder.Data;
-        }
-
         private void InitializeGameSession()
         {
             CreateMaze();
@@ -84,27 +78,41 @@ namespace Assets.Scripts
             if (GameSessionData.Instance.Coins != null)
                 GameSessionData.Instance.Coins.ForEach(coin => coin.OnDisableEvent += UpdateScore);
 
+            GameSessionData.Instance.Player.OnDestroyEvent += PlayerDied;
+
             StartCoroutine("CreateCoin");
+        }
+
+        private void CreateMaze()
+        {
+            _mazeBuilder.GenerateNewMaze(_mazeRowsSize, _mazeColsSize);
+            GameSessionData.Instance.Maze = _mazeBuilder.Data;
+        }
+
+        private void CreatePlayer()
+        {
+
         }
 
         public void UpdateScore()
         {
-            GameSessionData.Instance.CoinCount++;
+            GameSessionData.Instance.Score++;
 
             UpdateGameBehaviour();
 
-            _score.text = GameSessionData.Instance.CoinCount.ToString();
+            if (!_score.IsDestroyed())
+                _score.text = GameSessionData.Instance.Score.ToString();
         }
 
         private void UpdateGameBehaviour()
         {
-            if (GameSessionData.Instance.CoinCount == 5)
+            if (GameSessionData.Instance.Score == 5)
                 CreateEnemy(_zombie);
-            else if (GameSessionData.Instance.CoinCount == 10)
+            else if (GameSessionData.Instance.Score == 10)
                 CreateEnemy(_mummy);
-            else if (GameSessionData.Instance.CoinCount == 20)
+            else if (GameSessionData.Instance.Score == 20)
                 GameSessionData.Instance.PathFinder = new AStarPathFinder();
-            else if (GameSessionData.Instance.CoinCount > 20)
+            else if (GameSessionData.Instance.Score > 20)
                 GameSessionData.Instance.Enemies.ForEach(enemy => enemy.IncreaseSpeed());
         }
 
@@ -115,7 +123,7 @@ namespace Assets.Scripts
             var scoreItem = new ScoreItemDto
             {
                 Name = GameSessionData.Instance.UserName,
-                Score = GameSessionData.Instance.CoinCount.ToString(),
+                Score = GameSessionData.Instance.Score.ToString(),
                 Date = DateTime.Today.ToShortDateString(),
                 Duration = gameDuration.ToString(),
                 Result = _escapeType.ToString()
@@ -181,12 +189,19 @@ namespace Assets.Scripts
 
             if (GameSessionData.Instance.Coins != null)
             {
-                GameSessionData.Instance.Coins.ForEach(coin => coin.OnDisableEvent -= UpdateScore);
-                GameSessionData.Instance.Coins.ForEach(coin => coin.PickUp());
+                foreach (var coin in GameSessionData.Instance.Coins)
+                {
+                    if (coin == null)
+                        continue;
+
+                    coin.OnDisableEvent -= UpdateScore;
+                    coin.PickUp();
+                }
             }
 
+            GameSessionData.Instance.Player.OnDestroyEvent -= PlayerDied;
+
             StopCoroutine("CreateCoin");
-            _player.OnDestroyEvent -= PlayerDied;
 
             AddGameInfo();
         }
