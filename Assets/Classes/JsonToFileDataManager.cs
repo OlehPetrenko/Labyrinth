@@ -32,6 +32,12 @@ namespace Assets.Classes
 
             var json = File.ReadAllText(_path);
 
+            if(string.IsNullOrEmpty(json))
+            {
+                Debug.Log("Incorrect file with scores data.");
+                return new List<T>();
+            }
+
             return JsonHelper.FromJson<T>(json);
         }
 

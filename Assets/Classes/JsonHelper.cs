@@ -13,7 +13,7 @@ namespace Assets.Classes
         public static List<T> FromJson<T>(string json)
         {
             var wrapper = JsonUtility.FromJson<Wrapper<T>>(json);
-            return wrapper.Items;
+            return wrapper.Items ?? new List<T>();
         }
 
         public static string ToJson<T>(List<T> array)

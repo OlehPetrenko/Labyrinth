@@ -19,7 +19,6 @@ namespace Assets.Classes
         private bool[,] _maze;
         private List<Point> _groundPoints;
 
-
         public static GameSessionData Instance { get { return _instance; } }
 
         public string UserName { get; set; }
@@ -82,9 +81,7 @@ namespace Assets.Classes
 
         public void InitializeSession()
         {
-            //Player = GameObject.Find("Player").GetComponent<Player>();
-
-            Score = 19;
+            Score = 0;
             Enemies = new List<MovableEnemy>();
             PathFinder = null;
         }

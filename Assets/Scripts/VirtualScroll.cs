@@ -9,7 +9,8 @@ namespace Assets.Scripts
     /// <summary>
     /// Provides logic for virtual scroll.
     /// </summary>
-    public class VirtualScroll : MonoBehaviour
+    /// <remarks>It doesn't have top and bottom limits. Should be fixed in the nearest future.</remarks>
+    public sealed class VirtualScroll : MonoBehaviour
     {
         [SerializeField] private int _numberOfShownItems;
         [SerializeField] private int _spacing;
