@@ -32,6 +32,8 @@ namespace Assets.Scripts
         [SerializeField] private int _mazeRowsSize;
         [SerializeField] private int _mazeColsSize;
 
+        [SerializeField] private Player _player;
+
         [SerializeField] private MovableEnemy _zombie;
         [SerializeField] private MovableEnemy _mummy;
 
@@ -61,14 +63,12 @@ namespace Assets.Scripts
             }
         }
 
-        private void OnDestroy()
-        {
-            FinishGame();
-        }
-
         private void InitializeGameSession()
         {
+            _escapeType = EscapeType.Dead;
+
             CreateMaze();
+            CreatePlayer();
 
             GameSessionData.Instance.InitializeSession();
             GameSessionData.Instance.PathFinder = new RandomPathFinder();
@@ -87,11 +87,6 @@ namespace Assets.Scripts
         {
             _mazeBuilder.GenerateNewMaze(_mazeRowsSize, _mazeColsSize);
             GameSessionData.Instance.Maze = _mazeBuilder.Data;
-        }
-
-        private void CreatePlayer()
-        {
-
         }
 
         public void UpdateScore()
@@ -132,14 +127,39 @@ namespace Assets.Scripts
             GameSessionData.Instance.Scores.AddFirst(scoreItem);
         }
 
+        private void CreatePlayer()
+        {
+            //
+            // Put Player to the first available point.
+            //
+            var point = GameSessionData.Instance.GroundPoints.First();
+            var player = Instantiate(_player, new Vector3(point.X, point.Y), transform.rotation);
+
+            GameSessionData.Instance.Player = player;
+        }
+
         private void CreateEnemy(MovableEnemy enemy)
         {
-            var groundPoints = GameSessionData.Instance.GroundPoints;
+            List<Point> groundPoints;
+
+            //
+            // Remove first 5 points to create the first enemy at a distance from the Player.
+            //
+            if (!GameSessionData.Instance.Enemies.Any())
+            {
+                groundPoints = new List<Point>(GameSessionData.Instance.GroundPoints);
+                groundPoints.RemoveRange(0, 5);
+            }
+            else
+            {
+                groundPoints = GameSessionData.Instance.GroundPoints;
+            }
 
             var rand = new System.Random();
-            var point = groundPoints[rand.Next(0, groundPoints.Count)];
 
+            var point = groundPoints[rand.Next(0, groundPoints.Count)];
             var createdEnemy = Instantiate(enemy, new Vector3(point.X, point.Y), transform.rotation);
+
             GameSessionData.Instance.Enemies.Add(createdEnemy);
         }
 
@@ -178,32 +198,36 @@ namespace Assets.Scripts
 
         private void PlayerDied()
         {
-            _escapeType = EscapeType.Dead;
-
-            SceneManager.LoadScene("FinishScene");
+            FinishGame();
         }
 
         private void FinishGame()
         {
             _finishTime = DateTime.Now;
 
-            if (GameSessionData.Instance.Coins != null)
-            {
-                foreach (var coin in GameSessionData.Instance.Coins)
-                {
-                    if (coin == null)
-                        continue;
+            StopCoroutine("CreateCoin");
 
-                    coin.OnDisableEvent -= UpdateScore;
-                    coin.PickUp();
-                }
-            }
+            ResetCoins();
+            AddGameInfo();
 
             GameSessionData.Instance.Player.OnDestroyEvent -= PlayerDied;
 
-            StopCoroutine("CreateCoin");
+            SceneManager.LoadScene("FinishScene");
+        }
 
-            AddGameInfo();
+        private void ResetCoins()
+        {
+            if (GameSessionData.Instance.Coins == null)
+                return;
+
+            foreach (var coin in GameSessionData.Instance.Coins)
+            {
+                if (coin == null)
+                    continue;
+
+                coin.OnDisableEvent -= UpdateScore;
+                coin.PickUp();
+            }
         }
     }
 }

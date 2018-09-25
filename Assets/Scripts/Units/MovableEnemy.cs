@@ -14,7 +14,20 @@ namespace Assets.Scripts.Units
         private bool _shouldMove;
         private LinkedList<Point> _path;
 
+        private Point _currentPosition;
+        private Point _currentPositionShift;
+
         protected float Speed { get; set; }
+
+        private Point PlayerPoint
+        {
+            get
+            {
+                return new Point(
+                    GameSessionData.Instance.Player.transform.position.x > 1 ? (int)GameSessionData.Instance.Player.transform.position.x : 1,
+                    GameSessionData.Instance.Player.transform.position.y > 1 ? (int)GameSessionData.Instance.Player.transform.position.y : 1);
+            }
+        }
 
 
         protected override void Awake()
@@ -39,110 +52,64 @@ namespace Assets.Scripts.Units
 
             if (player)
                 Attack(player);
-
-            //var wall = collider.GetComponent<Wall>();
-
-            //if (wall) // or if(gameObject.CompareTag("YourWallTag"))
-            //{
-            //_shouldMove = false;
-
-            //rigidbody.velocity = Vector3.zero;
-            //UpdateDirection();
-            //}
         }
-
-        public void IncreaseSpeed()
-        {
-            //
-            // Increase speed on 5%.
-            //
-            Speed += Speed * 0.05F;
-        }
-
 
         private void UpdatePath()
         {
-            var currentPoint = new Point((int)transform.position.x, (int)transform.position.y);
+            _currentPosition = new Point((int)transform.position.x + _currentPositionShift.X, (int)transform.position.y + _currentPositionShift.Y);
 
-            if (_path != null && _path.Any() && _path.First.Value == currentPoint)
+            //
+            // Let enemy finish already constructed path, after that create a new one. 
+            // It makes game more playable.
+            //
+            if (_path != null && _path.Any() && _path.First.Value == _currentPosition)
+            {
                 _path.RemoveFirst();
+
+                UpdateCurrentPositionShift();
+            }
 
             if (_path != null && _path.Any())
                 return;
 
-            var playerPoint = new Point(
-                (int)GameSessionData.Instance.Player.transform.position.x,
-                (int)GameSessionData.Instance.Player.transform.position.y);
+            _path = GameSessionData.Instance.PathFinder.FindPath(GameSessionData.Instance.Maze, _currentPosition, PlayerPoint);
 
-            _path = GameSessionData.Instance.PathFinder.FindPath(GameSessionData.Instance.Maze, currentPoint, playerPoint);
+            UpdateCurrentPositionShift();
         }
 
         public virtual void Move()
         {
             UpdatePath();
 
-            if (_path.First.Value.X != (int)transform.position.x)
-                GoToPointX(_path.First.Value.X);
-
-            if (_path.First.Value.Y != (int)transform.position.y)
-                GoToPointY(_path.First.Value.Y);
-
-
-            //if ((int)transform.position.x == _goalX && (int)transform.position.y == _goalY)
-            //    UpdateDirection();
-
-            //if (_goalX != (int)transform.position.x)
-            //    GoToPointX(_goalX);
-
-            //if (_goalY != (int)transform.position.y)
-            //    GoToPointY(_goalY);
+            if (_path != null && _path.Any())
+                MoveToPoint(_path.First.Value);
         }
 
-        //private void UpdateDirection()
-        //{
-        //    var currentX = (int)transform.position.x;
-        //    var currentY = (int)transform.position.y;
-
-        //    var availablePoints = new List<Point>();
-
-        //    if (!GameSessionData.Instance.Maze[currentX, currentY])
-        //        availablePoints.Add(new Point { X = currentX, Y = currentY - 1 });
-
-        //    if (!GameSessionData.Instance.Maze[currentX, currentY + 1])
-        //        availablePoints.Add(new Point { X = currentX, Y = currentY + 1 });
-
-        //    if (!GameSessionData.Instance.Maze[currentX - 1, currentY])
-        //        availablePoints.Add(new Point { X = currentX - 1, Y = currentY });
-
-        //    if (!GameSessionData.Instance.Maze[currentX + 1, currentY])
-        //        availablePoints.Add(new Point { X = currentX + 1, Y = currentY });
-
-        //    var rand = new System.Random();
-
-        //    var point = availablePoints[rand.Next(0, availablePoints.Count)];
-
-        //    _goalX = point.X;
-        //    _goalY = point.Y;
-        //}
-
-        private void GoToPointX(int goalX)
+        private void MoveToPoint(Point goal)
         {
-            var currentX = (int)transform.position.x;
+            var direction = Vector3.zero;
 
-            var direction = transform.right * (goalX > currentX ? 1 : -1);
+            if (_path.First.Value.X != _currentPosition.X)
+            {
+                direction = transform.right * (goal.X > _currentPosition.X ? 1 : -1);
+                Sprite.flipX = direction.x > 0;
+            }
+
+            if(_path.First.Value.Y != _currentPosition.Y)
+                direction = transform.up * (goal.Y > _currentPosition.Y ? 1 : -1);
 
             transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, Speed * Time.smoothDeltaTime);
-
-            Sprite.flipX = direction.x > 0;
         }
 
-        private void GoToPointY(int goalY)
+        private void UpdateCurrentPositionShift()
         {
-            var currentY = (int)transform.position.y;
+            _currentPositionShift = new Point(0, 0);
 
-            var direction = transform.up * (goalY > currentY ? 1 : -1);
+            if (_path == null || !_path.Any())
+                return;
 
-            transform.position = Vector3.MoveTowards(transform.position, transform.position + direction, Speed * Time.smoothDeltaTime);
+            _currentPositionShift.X = _path.First.Value.X < _currentPosition.X ? 1 : 0;
+            _currentPositionShift.Y = _path.First.Value.Y < _currentPosition.Y ? 1 : 0;
         }
 
         public virtual void Attack(Unit targetUnit)
@@ -151,6 +118,14 @@ namespace Assets.Scripts.Units
             _shouldMove = false;
 
             targetUnit.ReceiveDamage();
+        }
+
+        public void IncreaseSpeed()
+        {
+            //
+            // Increase speed on 5%.
+            //
+            Speed += Speed * 0.05F;
         }
     }
 }

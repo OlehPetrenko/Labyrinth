@@ -862,9 +862,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec23af5fc8871d044a1ad7e491683158, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _numberOfShownItems: 7
-  _spacing: 30
-  _startPositionY: 300
 --- !u!4 &1264774664
 Transform:
   m_ObjectHideFlags: 0
@@ -877,6 +874,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1339409926
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1339409928}
+  - component: {fileID: 1339409927}
+  m_Layer: 0
+  m_Name: VirtualScroll
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1339409927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1339409926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3cd01405888a744ead9200d931b9d94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _numberOfShownItems: 7
+  _spacing: 30
+  _startPositionY: 300
+  _items: {fileID: 1264252777}
+  _scrollRect: {fileID: 69095735}
+  _scoreItem: {fileID: 114354741688923966, guid: c13d433a39fa3b144ab2e949d5a17384,
+    type: 2}
+--- !u!4 &1339409928
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1339409926}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1453819843
 GameObject:

@@ -11,7 +11,7 @@ namespace Assets.Scripts.Units
         {
             base.Awake();
 
-            Speed = 3f;
+            Speed = 2.6f;
         }
 
         public override void Attack(Unit targetUnit)

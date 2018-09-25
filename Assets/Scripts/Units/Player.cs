@@ -17,7 +17,7 @@ namespace Assets.Scripts.Units
 
         protected override void Awake()
         {
-            _speed = 2.0f;
+            _speed = 2.5f;
 
             base.Awake();
         }

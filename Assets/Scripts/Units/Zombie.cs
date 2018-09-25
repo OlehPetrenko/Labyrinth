@@ -9,7 +9,7 @@
         {
             base.Awake();
 
-            Speed = 1.5f;
+            Speed = 1.3f;
         }
     }
 }

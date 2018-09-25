@@ -29,7 +29,7 @@ namespace Assets.Classes
         public LinkedList<ScoreItemDto> Scores { get; set; }
         public List<MovableEnemy> Enemies { get; private set; }
 
-        public Player Player { get; private set; }
+        public Player Player { get; set; }
 
         public IPathFinder PathFinder { get; set; }
 
@@ -82,9 +82,9 @@ namespace Assets.Classes
 
         public void InitializeSession()
         {
-            Player = GameObject.Find("Player").GetComponent<Player>();
+            //Player = GameObject.Find("Player").GetComponent<Player>();
 
-            Score = 0;
+            Score = 19;
             Enemies = new List<MovableEnemy>();
             PathFinder = null;
         }
