@@ -19,7 +19,7 @@ namespace Assets.Classes
             //
             // Set default path if not specified.
             //
-            _path = path ?? string.Format("{0}\\Data\\data{1}.txt", Application.dataPath, typeof(T));
+            _path = path ?? string.Format("{0}\\Data\\data{1}.txt", Application.streamingAssetsPath, typeof(T));
         }
 
         public List<T> Load()

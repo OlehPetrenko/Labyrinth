@@ -75,7 +75,7 @@ namespace Assets.Classes
         {
             Enemies = new List<MovableEnemy>();
 
-            _dataManager = new JsonToFileDataManager<ScoreItemDto>(string.Format("{0}\\Data\\scores.txt", Application.dataPath));
+            _dataManager = new JsonToFileDataManager<ScoreItemDto>(string.Format("{0}\\Data\\scores.txt", Application.streamingAssetsPath));
             Scores = new LinkedList<ScoreItemDto>(_dataManager.Load());
         }
 
