@@ -1,32 +1,22 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Assets.Interfaces;
-using Assets.Scripts;
 using Assets.Scripts.Units;
-using UnityEngine;
 
 namespace Assets.Classes
 {
     /// <summary>
-    /// The singleton object with game data.
+    /// The singleton object with game data for session.
     /// </summary>
     public sealed class GameSessionData
     {
         private static readonly GameSessionData _instance = new GameSessionData();
-
-        private readonly IDataManager<ScoreItemDto> _dataManager;
+        public static GameSessionData Instance { get { return _instance; } }
 
         private bool[,] _maze;
         private List<Point> _groundPoints;
 
-        public static GameSessionData Instance { get { return _instance; } }
-
         public string UserName { get; set; }
         public int Score { get; set; }
-
-        public List<Coin> Coins { get; set; }
-        public LinkedList<ScoreItemDto> Scores { get; set; }
-        public List<MovableEnemy> Enemies { get; private set; }
 
         public Player Player { get; set; }
 
@@ -34,10 +24,7 @@ namespace Assets.Classes
 
         public bool[,] Maze
         {
-            get
-            {
-                return _maze;
-            }
+            get { return _maze; }
             set
             {
                 _groundPoints = null;
@@ -71,24 +58,12 @@ namespace Assets.Classes
         }
 
 
-        private GameSessionData()
-        {
-            Enemies = new List<MovableEnemy>();
-
-            _dataManager = new JsonToFileDataManager<ScoreItemDto>(string.Format("{0}\\Data\\scores.txt", Application.streamingAssetsPath));
-            Scores = new LinkedList<ScoreItemDto>(_dataManager.Load());
-        }
-
         public void InitializeSession()
         {
-            Score = 0;
-            Enemies = new List<MovableEnemy>();
-            PathFinder = null;
-        }
+            _groundPoints = null;
 
-        public void Save()
-        {
-            _dataManager.Save(Scores.ToList());
+            Score = 0;
+            PathFinder = null;
         }
     }
 }

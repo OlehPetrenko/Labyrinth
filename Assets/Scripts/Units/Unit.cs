@@ -17,6 +17,7 @@ namespace Assets.Scripts.Units
             set { Animator.SetInteger("State", (int)value); }
         }
 
+
         protected virtual void Awake()
         {
             Animator = GetComponent<Animator>();

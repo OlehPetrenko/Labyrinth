@@ -13,14 +13,6 @@ namespace Assets.Scripts
         public event Action OnDisableEvent;
 
 
-        private void Awake()
-        {
-            //
-            // Don't destroy coin object to use it for further game sessions.
-            //
-            DontDestroyOnLoad(gameObject);
-        }
-
         private void OnDisable()
         {
             if (OnDisableEvent != null)
@@ -37,7 +29,7 @@ namespace Assets.Scripts
             var rand = new System.Random();
 
             var groundPoints = GameSessionData.Instance.GroundPoints;
-            var activeCoins = GameSessionData.Instance.Coins.Where(coin => coin.gameObject.activeSelf);
+            var activeCoins = GameCommonData.Instance.CoinPool.ActiveCoins;
 
             var point = groundPoints[rand.Next(0, groundPoints.Count)];
 

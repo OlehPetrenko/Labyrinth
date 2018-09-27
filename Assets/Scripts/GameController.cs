@@ -27,6 +27,8 @@ namespace Assets.Scripts
         private DateTime _startTime;
         private DateTime _finishTime;
 
+        private List<MovableEnemy> _enemies;
+
         [SerializeField] private MazeBuilder _mazeBuilder;
 
         [SerializeField] private int _mazeRowsSize;
@@ -40,7 +42,6 @@ namespace Assets.Scripts
         [SerializeField] private int _maxCoinsCountInMaze;
         [SerializeField] private int _coinAppearanceIntervalSec;
 
-        [SerializeField] private Coin _coin;
         [SerializeField] private Text _score;
 
 
@@ -65,6 +66,7 @@ namespace Assets.Scripts
 
         private void InitializeGameSession()
         {
+            _enemies = new List<MovableEnemy>();
             _escapeType = EscapeType.Dead;
 
             CreateMaze();
@@ -74,9 +76,6 @@ namespace Assets.Scripts
             GameSessionData.Instance.PathFinder = new RandomPathFinder();
 
             CreateEnemy(_zombie);
-
-            if (GameSessionData.Instance.Coins != null)
-                GameSessionData.Instance.Coins.ForEach(coin => coin.OnDisableEvent += UpdateScore);
 
             GameSessionData.Instance.Player.OnDestroyEvent += PlayerDied;
 
@@ -108,7 +107,7 @@ namespace Assets.Scripts
             else if (GameSessionData.Instance.Score == 20)
                 GameSessionData.Instance.PathFinder = new AStarPathFinder();
             else if (GameSessionData.Instance.Score > 20)
-                GameSessionData.Instance.Enemies.ForEach(enemy => enemy.IncreaseSpeed());
+                _enemies.ForEach(enemy => enemy.IncreaseSpeed());
         }
 
         private void AddGameInfo()
@@ -124,7 +123,7 @@ namespace Assets.Scripts
                 Result = _escapeType.ToString()
             };
 
-            GameSessionData.Instance.Scores.AddFirst(scoreItem);
+            GameCommonData.Instance.Scores.AddFirst(scoreItem);
         }
 
         private void CreatePlayer()
@@ -145,7 +144,7 @@ namespace Assets.Scripts
             //
             // Remove first 5 points to create the first enemy at a distance from the Player.
             //
-            if (!GameSessionData.Instance.Enemies.Any())
+            if (!_enemies.Any())
             {
                 groundPoints = new List<Point>(GameSessionData.Instance.GroundPoints);
                 groundPoints.RemoveRange(0, 5);
@@ -160,37 +159,28 @@ namespace Assets.Scripts
             var point = groundPoints[rand.Next(0, groundPoints.Count)];
             var createdEnemy = Instantiate(enemy, new Vector3(point.X, point.Y), transform.rotation);
 
-            GameSessionData.Instance.Enemies.Add(createdEnemy);
+            _enemies.Add(createdEnemy);
         }
 
         IEnumerator CreateCoin()
         {
-            if (GameSessionData.Instance.Coins == null)
-                GameSessionData.Instance.Coins = new List<Coin>(_maxCoinsCountInMaze);
-
             while (true)
             {
-                //
-                // Try to use alredy created coin.
-                //
-                var availableCoin = GameSessionData.Instance.Coins.FirstOrDefault(coin => !coin.gameObject.activeSelf);
-                if (availableCoin != null)
+                if (GameCommonData.Instance.CoinPool.ActiveCoinsCount >= _maxCoinsCountInMaze)
                 {
-                    availableCoin.Show();
                     yield return new WaitForSeconds(_coinAppearanceIntervalSec);
+                    continue;
                 }
 
-                //
-                // Create a new one if all coins are active.
-                //
-                if (GameSessionData.Instance.Coins.Count < _maxCoinsCountInMaze)
-                {
-                    var coin = Instantiate(_coin);
-                    coin.OnDisableEvent += UpdateScore;
-                    coin.Show();
+                var coin = GameCommonData.Instance.CoinPool.GetCoin();
 
-                    GameSessionData.Instance.Coins.Add(coin);
-                }
+                //
+                // Remove the event if it has been already added, this prevents multiple firing of the event.
+                //
+                coin.OnDisableEvent -= UpdateScore;
+                coin.OnDisableEvent += UpdateScore;
+
+                coin.Show();
 
                 yield return new WaitForSeconds(_coinAppearanceIntervalSec);
             }
@@ -217,10 +207,10 @@ namespace Assets.Scripts
 
         private void ResetCoins()
         {
-            if (GameSessionData.Instance.Coins == null)
+            if (GameCommonData.Instance.CoinPool == null)
                 return;
 
-            foreach (var coin in GameSessionData.Instance.Coins)
+            foreach (var coin in GameCommonData.Instance.CoinPool.Coins)
             {
                 if (coin == null)
                     continue;

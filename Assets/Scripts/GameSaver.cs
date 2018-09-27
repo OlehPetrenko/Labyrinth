@@ -13,14 +13,12 @@ namespace Assets.Scripts
             DontDestroyOnLoad(this);
 
             if (FindObjectsOfType(GetType()).Length > 1)
-            {
                 Destroy(gameObject);
-            }
         }
 
         private void OnApplicationQuit()
         {
-            GameSessionData.Instance.Save();
+            GameCommonData.Instance.Save();
         }
     }
 }

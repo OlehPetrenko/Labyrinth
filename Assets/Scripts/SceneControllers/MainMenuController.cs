@@ -36,8 +36,6 @@ namespace Assets.Scripts.SceneControllers
 
         public void CloseGame()
         {
-            GameSessionData.Instance.Save();
-
             Application.Quit();
         }
     }

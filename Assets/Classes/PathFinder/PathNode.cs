@@ -14,10 +14,7 @@
 
         public int EstimateFullPathLength
         {
-            get
-            {
-                return PathLengthFromStart + HeuristicEstimatePathLength;
-            }
+            get { return PathLengthFromStart + HeuristicEstimatePathLength; }
         }
     }
 

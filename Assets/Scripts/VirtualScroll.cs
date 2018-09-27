@@ -33,7 +33,7 @@ namespace Assets.Scripts
                 if (_scores != null)
                     return _scores;
 
-                return _scores = GameSessionData.Instance.Scores.ToList();
+                return _scores = GameCommonData.Instance.Scores.ToList();
             }
         }
 
